@@ -1,6 +1,8 @@
-# AWS Tradutor com Interface Gráfica em Python
+# TraduzAI
 
-## Resumo
+## A Personalized Solution for Effective and Fluent Translation in Different Contexts
+
+### Resumo
 
 Este projeto visa desenvolver um sistema de tradução automática que, além de traduzir de uma língua para outra, seja
 capaz de interpretar e traduzir jargões técnicos de áreas como medicina, direito, matemática, química, física,
@@ -33,7 +35,7 @@ Translate, Personalização, Feedback do Usuário, Atendimento ao Cliente, Monit
 
 ---
 
-## Índice
+### Índice
 
 - [Requisitos](#0-requisitos)
 - [Instalação](#1-instalação)
@@ -51,23 +53,23 @@ Translate, Personalização, Feedback do Usuário, Atendimento ao Cliente, Monit
 
 ---
 
-## 0-Requisitos
+### 0-Requisitos
 
-- **Python 3.8** ou superior
+- **Python 3.12** ou superior
 - Conta na **AWS** com acesso ao **Amazon Translate**
 
 ---
 
-## 1-Instalação
+### 1-Instalação
 
-### 1.1 Clonar o Repositório
+#### 1.1 Clonar o Repositório
 
 ```bash
 git clone https://github.com/TraduzAI/aws-translator-with-python
 cd aws-translator-with-python
 ```
 
-### 1.2 Criar e Configurar o Arquivo `.env`
+#### 1.2 Criar e Configurar o Arquivo `.env`
 
 ```dotenv
 AWS_ACCESS_KEY_ID=
@@ -75,19 +77,19 @@ AWS_SECRET_ACCESS_KEY=
 AWS_REGION=
 ```
 
-#### 1.2 Preencha os campos com suas credenciais da AWS:
+##### 1.2 Preencha os campos com suas credenciais da AWS:
 
 - **AWS_ACCESS_KEY_ID**: ID da chave de acesso da AWS
 - **AWS_SECRET_ACCESS_KEY**: Chave de acesso secreta da AWS
 - **AWS_REGION**: Região da AWS onde o serviço Amazon Translate está disponível (por exemplo, us-east-1)
 
-#### 1.3 Instalar as Dependências
+##### 1.3 Instalar as Dependências
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 2. Código-Fonte
+### 2. Código-Fonte
 
 O código principal está contido no arquivo app.py e é estruturado da seguinte forma:
 
@@ -131,7 +133,7 @@ if __name__ == "__main__":
     root.mainloop()
 ```
 
-## 3. Como Executar
+### 3. Como Executar
 
 Após ter clonado o repositório e configurado o arquivo `.env`, você pode executar o aplicativo com o seguinte comando:
 
@@ -142,14 +144,14 @@ python app.py
 Nota: Certifique-se de que o arquivo app.py está no diretório atual e de que as credenciais da AWS foram corretamente
 configuradas no arquivo .env.
 
-## 4. Como Usar
+### 4. Como Usar
 
-### 4.1 Interface do Usuário:
+#### 4.1 Interface do Usuário:
 
 A interface do usuário foi desenvolvida com a biblioteca Tkinter em Python, permitindo uma interação intuitiva e
 amigável com o sistema de tradução.
 
-### 4.2 Elementos da Interface:
+#### 4.2 Elementos da Interface:
 
 - **Caixa de Texto (Entrada)**: Permite inserir o texto que você deseja traduzir.
 - **Menu Suspenso (Seleção de Idioma)**: Permite escolher o idioma de destino para a tradução.
@@ -157,7 +159,7 @@ amigável com o sistema de tradução.
 - **Caixa de Texto (Saída)**: Exibe o texto traduzido após a conclusão do processo.
 - **Mensagens de Erro**: Exibidas em caso de falha na tradução ou erro de conexão com a AWS.
 
-### 4.3 Processo de Tradução:
+#### 4.3 Processo de Tradução:
 
 - **Detecção Automática de Idioma**: O sistema detecta automaticamente o idioma do texto de origem.
 - **Tradução de Texto**: O texto é traduzido para o idioma selecionado no menu suspenso.
