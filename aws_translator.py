@@ -5,8 +5,18 @@ import boto3
 import os
 
 
-class AWSTranslatorApp:
+class AwsTranslateService:
     def __init__(self, root: Tk) -> None:
+
+        self.texto_entrada = None
+        self.destino_var = None
+        self.texto_saida = None
+        self.languages = None
+
+        self.SECRET_KEY = None
+        self.ACCESS_KEY = None
+        self.REGION = None
+
         self.root = root
         self.root.geometry("400x500")
         self.root.title("AWS Tradutor")
@@ -100,7 +110,7 @@ class AWSTranslatorApp:
         """Realiza a tradução do texto inserido."""
         texto: str = self.texto_entrada.get("1.0", END).strip()
         if not texto:
-            self.mostrar_mensagem("Por favor, insira um texto para traduzir.")
+            self.mostrar_mensagem_erro("Por favor, insira um texto para traduzir.")
             return
 
         codigo_idioma_destino: str = self.languages[self.destino_var.get()]
@@ -114,14 +124,14 @@ class AWSTranslatorApp:
             texto_traduzido: str = response['TranslatedText']
             self.mostrar_resultado(texto_traduzido)
         except Exception as e:
-            self.mostrar_mensagem(f"Erro na tradução: {str(e)}")
+            self.mostrar_mensagem_erro(f"Erro na tradução: {str(e)}")
 
     def mostrar_resultado(self, texto: str) -> None:
         """Exibe o resultado da tradução."""
         self.texto_saida.delete("1.0", END)
         self.texto_saida.insert(END, texto)
 
-    def mostrar_mensagem(self, mensagem: str) -> None:
+    def mostrar_mensagem_erro(self, mensagem: str) -> None:
         """Exibe uma mensagem na caixa de saída."""
         self.texto_saida.delete("1.0", END)
         self.texto_saida.insert(END, mensagem)
@@ -129,5 +139,5 @@ class AWSTranslatorApp:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = AWSTranslatorApp(root)
+    app = AwsTranslateService(root)
     root.mainloop()
