@@ -56,7 +56,6 @@ out/
 
 # envorolment
 .env
-.venv
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
