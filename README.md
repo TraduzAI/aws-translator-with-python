@@ -5,7 +5,7 @@
 ### Resumo
 
 Este projeto visa desenvolver um sistema de tradução automática que, além de traduzir de uma língua para outra, seja
-capaz de interpretar e traduzir jargões técnicos de áreas como medicina, direito, matemática, química, física,
+capaz de interpretar e traduzir jargões técnicos de áreas como medicina, psicologia, direito, matemática, química, física,
 programação, filosofia, entre outras ciências exatas e naturais, para uma linguagem cotidiana e acessível para pessoas
 que não são especialistas na área.
 
@@ -75,13 +75,15 @@ cd aws-translator-with-python
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 AWS_REGION=
+OPENAI_API_KEY=
 ```
 
-##### 1.2 Preencha os campos com suas credenciais da AWS:
+##### 1.2 Preencha os campos com suas credenciais da AWS e OpenAI:
 
 - **AWS_ACCESS_KEY_ID**: ID da chave de acesso da AWS
 - **AWS_SECRET_ACCESS_KEY**: Chave de acesso secreta da AWS
 - **AWS_REGION**: Região da AWS onde o serviço Amazon Translate está disponível (por exemplo, us-east-1)
+- **OPENAI_API_KEY**: Chave de acesso da API da OpenAI
 
 ##### 1.3 Instalar as Dependências
 
@@ -91,58 +93,31 @@ pip install -r requirements.txt
 
 ### 2. Código-Fonte
 
-O código principal está contido no arquivo app.py e é estruturado da seguinte forma:
+O código principal agora está dividido em diferentes módulos para separar as responsabilidades e facilitar a manutenção. A estrutura dos diretórios é a seguinte:
 
-```python 
-import tkinter as tk
-from tkinter import END, Tk
-from dotenv import load_dotenv
-import boto3
-import os
-
-
-class AWSTranslatorApp:
-    def __init__(self, root: Tk) -> None:
-        # Inicialização da interface e carregamento das credenciais
-        pass
-
-    def load_aws_credentials(self) -> None:
-        # Carrega as credenciais AWS do arquivo .env
-        pass
-
-    def create_widgets(self) -> None:
-        # Cria os componentes da interface gráfica
-        pass
-
-    def traduzir_texto(self) -> None:
-        # Realiza a tradução usando o Amazon Translate
-        pass
-
-    def mostrar_resultado(self, texto: str) -> None:
-        # Exibe o texto traduzido na interface
-        pass
-
-    def mostrar_mensagem(self, mensagem: str) -> None:
-        # Exibe mensagens de erro ou aviso na interface
-        pass
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = AWSTranslatorApp(root)
-    root.mainloop()
 ```
+aws-translator-with-python/
+│
+├── main.py
+├── services/
+│   ├── __init__.py
+│   ├── aws_translate_service.py
+│   └── openai_service.py
+```
+
+- **`main.py`**: Contém a interface gráfica utilizando Tkinter e faz uso dos serviços de tradução e simplificação.
+- **`services/aws_translate_service.py`**: Contém a lógica para tradução utilizando o AWS Translate.
+- **`services/openai_service.py`**: Contém a lógica para simplificação de texto utilizando a API da OpenAI.
 
 ### 3. Como Executar
 
 Após ter clonado o repositório e configurado o arquivo `.env`, você pode executar o aplicativo com o seguinte comando:
 
 ```bash
-python app.py
+python main.py
 ```
 
-Nota: Certifique-se de que o arquivo app.py está no diretório atual e de que as credenciais da AWS foram corretamente
-configuradas no arquivo .env.
+Nota: Certifique-se de que o arquivo `main.py` está no diretório atual e de que as credenciais da AWS e OpenAI foram corretamente configuradas no arquivo `.env`.
 
 ### 4. Como Usar
 
@@ -163,5 +138,5 @@ amigável com o sistema de tradução.
 
 - **Detecção Automática de Idioma**: O sistema detecta automaticamente o idioma do texto de origem.
 - **Tradução de Texto**: O texto é traduzido para o idioma selecionado no menu suspenso.
-- **Exibição do Resultado**: O texto traduzido é exibido na caixa de texto inferior.
-
+- **Simplificação de Jargões Técnicos**: O texto traduzido é simplificado usando a API da OpenAI para torná-lo mais acessível ao público geral.
+- **Exibição do Resultado**: O texto traduzido e simplificado é exibido na caixa de texto inferior.
