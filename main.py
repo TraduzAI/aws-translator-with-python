@@ -12,8 +12,9 @@ class TranslationApp:
         self.destino_var = None
         self.languages = None
         self.texto_saida = None
+        self.summarize_var = tk.BooleanVar()  # Variável para o checkbox de resumir
         self.root = root
-        self.root.geometry("600x700")
+        self.root.geometry("600x750")
         self.root.title("AWS Tradutor com Simplificação de Jargões Técnicos")
 
         # Inicializa os serviços
@@ -125,6 +126,15 @@ class TranslationApp:
         self.texto_entrada = tk.Text(self.root, height=10, width=70, wrap='word')
         self.texto_entrada.pack(pady=(5, 10))
 
+        # Checkbox para resumir
+        checkbox_summarize = tk.Checkbutton(
+            self.root,
+            text="Resumir o texto",
+            variable=self.summarize_var,
+            font=("Helvetica", 12)
+        )
+        checkbox_summarize.pack(pady=(5, 10))
+
         # Botão de tradução
         botao_traduzir = tk.Button(
             self.root,
@@ -149,25 +159,26 @@ class TranslationApp:
         self.texto_saida.pack(pady=(5, 10))
 
     def traduzir_texto(self) -> None:
-        """Realiza a tradução do texto inserido e simplifica o jargão."""
+        """Realiza a simplificação (e opção de resumir) e traduz o texto inserido."""
         texto = self.texto_entrada.get("1.0", END).strip()
         if not texto:
-            messagebox.showwarning("Entrada Vazia", "Por favor, insira um texto para traduzir.")
+            messagebox.showwarning("Entrada Vazia", "Por favor, insira um texto para simplificar e traduzir.")
             return
 
         codigo_idioma_destino = self.languages.get(self.destino_var.get(), 'pt')
         area_tecnica = self.area_var.get()
         estilo = self.estilo_var.get()
+        summarize = self.summarize_var.get()
 
         try:
-            # Tradução com AWS Translate
-            texto_traduzido = self.aws_translate_service.translate_text(texto, codigo_idioma_destino)
-
             # Simplificação com OpenAI
-            texto_simplificado = self.openai_service.simplify_text(texto_traduzido, area_tecnica, estilo)
+            texto_simplificado = self.openai_service.simplify_text(texto, area_tecnica, estilo, summarize)
+
+            # Tradução com AWS Translate
+            texto_traduzido = self.aws_translate_service.translate_text(texto_simplificado, codigo_idioma_destino)
 
             # Exibe o resultado na caixa de saída
-            self.mostrar_resultado(texto_simplificado)
+            self.mostrar_resultado(texto_traduzido)
         except Exception as e:
             messagebox.showerror("Erro", str(e))
 

@@ -32,15 +32,48 @@ class OpenAIService:
         except Exception as e:
             raise ConnectionError(f"Falha ao inicializar o cliente OpenAI: {str(e)}")
 
-    def simplify_text(self, text: str, area_tecnica: str, estilo: str) -> str:
-        """Simplifica o texto usando a API da OpenAI."""
-        messages = [
-            {"role": "system", "content": f"Você é um especialista em {area_tecnica}."},
-            {
-                "role": "user",
-                "content": f"Reescreva o seguinte texto em um estilo {estilo}, tornando-o acessível para pessoas leigas:\n\nTexto: {text}"
-            }
-        ]
+    def simplify_text(self, text: str, area_tecnica: str, estilo: str, summarize: bool) -> str:
+        """Simplifica (e opcionalmente resume) o texto usando a API da OpenAI."""
+        if summarize:
+            # Prompt para simplificar e resumir
+            messages = [
+                {
+                    "role": "system",
+                    "content": (
+                        f"Você é um especialista em {area_tecnica}. Seu objetivo é tornar conceitos dessa área "
+                        f"mais acessíveis a pessoas leigas, resumindo o conteúdo sem perder informações essenciais."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        f"Por favor, resuma e reescreva o seguinte texto de forma simples e clara, "
+                        f"utilizando um estilo {estilo}. Garanta que o resumo seja fácil de entender, "
+                        f"removendo termos técnicos complexos e usando linguagem cotidiana:\n\nTexto: {text}"
+                    )
+                }
+            ]
+        else:
+            # Prompt para apenas simplificar sem resumir
+            messages = [
+                {
+                    "role": "system",
+                    "content": (
+                        f"Você é um especialista em {area_tecnica}. Seu objetivo é tornar conceitos dessa área "
+                        f"mais acessíveis a pessoas leigas."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        f"Por favor, reescreva o seguinte texto de forma simples e clara, "
+                        f"mas mantendo todas as informações originais. "
+                        f"O objetivo não é resumir, mas tornar o texto acessível para pessoas que não são especialistas em {area_tecnica}, "
+                        f"utilizando um estilo {estilo}. Garanta que o conteúdo seja fácil de entender, "
+                        f"removendo termos técnicos complexos e usando linguagem cotidiana:\n\nTexto: {text}"
+                    )
+                }
+            ]
 
         max_retries = 5
         for attempt in range(max_retries):
@@ -48,7 +81,7 @@ class OpenAIService:
                 response = self.openai_client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=messages,
-                    max_tokens=500,
+                    max_tokens=1000,
                     temperature=0.7,
                     top_p=1,
                     frequency_penalty=0,
