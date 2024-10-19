@@ -1,7 +1,9 @@
+import os  # Adicione esta linha
 import tkinter as tk
-from tkinter import END, Tk, messagebox
+from tkinter import END, Tk, messagebox, filedialog
 from services.aws_translate_service import AwsTranslateService
 from services.openai_service import OpenAIService
+from services.document_service import DocumentService
 
 
 class TranslationApp:
@@ -22,6 +24,7 @@ class TranslationApp:
         try:
             self.aws_translate_service = AwsTranslateService()
             self.openai_service = OpenAIService()
+            self.document_service = DocumentService()
         except Exception as e:
             messagebox.showerror("Erro ao Inicializar", str(e))
             self.root.destroy()
@@ -217,6 +220,30 @@ class TranslationApp:
         self.texto_entrada = tk.Text(self.root, height=10, width=70, wrap='word')
         self.texto_entrada.pack(pady=(5, 10))
 
+        # Botões de Importar e Exportar
+        button_frame = tk.Frame(self.root)
+        button_frame.pack(pady=(5, 10))
+
+        import_button = tk.Button(
+            button_frame,
+            text="Importar Documento",
+            command=self.import_document,
+            bg="#2196F3",
+            fg="white",
+            font=("Helvetica", 12, "bold")
+        )
+        import_button.pack(side=tk.LEFT, padx=5)
+
+        export_button = tk.Button(
+            button_frame,
+            text="Exportar Documento",
+            command=self.export_document,
+            bg="#FF9800",
+            fg="white",
+            font=("Helvetica", 12, "bold")
+        )
+        export_button.pack(side=tk.LEFT, padx=5)
+
         # Checkbox para resumir
         checkbox_summarize = tk.Checkbutton(
             self.root,
@@ -284,6 +311,60 @@ class TranslationApp:
         self.texto_saida.delete("1.0", END)
         self.texto_saida.insert(END, texto)
         self.texto_saida.config(state='disabled')
+
+    def import_document(self):
+        """Importa texto de um documento e exibe na caixa de entrada."""
+        file_path = filedialog.askopenfilename(
+            title="Selecionar Documento",
+            filetypes=[
+                ("Todos os arquivos", "*.*"),
+                ("Documento de Texto", "*.txt"),
+                ("Documento PDF", "*.pdf"),
+                ("Documento Word", "*.docx"),
+                ("eBooks", "*.epub")
+            ]
+        )
+        if file_path:
+            try:
+                text = self.document_service.import_document(file_path)
+                self.texto_entrada.delete("1.0", END)
+                self.texto_entrada.insert(END, text)
+            except Exception as e:
+                messagebox.showerror("Erro ao Importar Documento", str(e))
+
+    def export_document(self):
+        """Exporta o texto de saída para um documento."""
+        if self.texto_saida.get("1.0", END).strip() == '':
+            messagebox.showwarning("Nenhum texto para exportar", "Não há texto traduzido e simplificado para exportar.")
+            return
+
+        file_path = filedialog.asksaveasfilename(
+            title="Salvar Documento",
+            defaultextension=".txt",
+            filetypes=[
+                ("Documento de Texto", "*.txt"),
+                ("Documento PDF", "*.pdf"),
+                ("Documento Word", "*.docx")
+            ]
+        )
+        if file_path:
+            try:
+                _, ext = os.path.splitext(file_path)
+                ext = ext.lower()
+                if ext == '.txt':
+                    format = 'txt'
+                elif ext == '.pdf':
+                    format = 'pdf'
+                elif ext == '.docx':
+                    format = 'docx'
+                else:
+                    messagebox.showerror("Formato não suportado", f"Formato de arquivo não suportado: {ext}")
+                    return
+                text = self.texto_saida.get("1.0", END)
+                self.document_service.export_document(text, file_path, format)
+                messagebox.showinfo("Exportação bem-sucedida", f"Documento exportado com sucesso: {file_path}")
+            except Exception as e:
+                messagebox.showerror("Erro ao Exportar Documento", str(e))
 
 
 if __name__ == "__main__":
