@@ -44,7 +44,7 @@ class AwsTranslateService:
         try:
             response = self.translate_client.translate_text(
                 Text=text,
-                SourceLanguageCode='auto',
+                SourceLanguageCode='auto',  # Detecta automaticamente o idioma do texto de origem
                 TargetLanguageCode=target_language_code
             )
             return response['TranslatedText']

@@ -13,9 +13,10 @@ class TranslationApp:
         self.languages = None
         self.texto_saida = None
         self.summarize_var = tk.BooleanVar()  # Variável para o checkbox de resumir
+        self.modelo_var = None  # Variável para seleção de modelo
         self.root = root
-        self.root.geometry("600x750")
-        self.root.title("AWS Tradutor com Simplificação de Jargões Técnicos")
+        self.root.geometry("600x800")
+        self.root.title("Tradutor e Simplificador de Textos Técnicos")
 
         # Inicializa os serviços
         try:
@@ -93,9 +94,78 @@ class TranslationApp:
         label_area.pack(pady=(10, 0))
         self.area_var = tk.StringVar(self.root)
         self.area_var.set('Geral')  # Valor padrão
-        areas_tecnicas = ['Geral', 'Medicina', 'Psicologia',
-                          'Direito', 'Matemática', 'Química',
-                          'Física', 'Programação', 'Filosofia']
+        areas_tecnicas = [
+            'Geral',
+            'Medicina',
+            'Psicologia',
+            'Direito',
+            'Matemática',
+            'Química',
+            'Física',
+            'Programação',
+            'Filosofia',
+            'Engenharia Civil',
+            'Engenharia Mecânica',
+            'Engenharia Elétrica',
+            'Engenharia Química',
+            'Engenharia de Produção',
+            'Engenharia de Computação',
+            'Engenharia Ambiental',
+            'Biologia',
+            'Bioquímica',
+            'Genética',
+            'Medicina Veterinária',
+            'Nutrição',
+            'Biomedicina',
+            'Sociologia',
+            'Antropologia',
+            'Ciência Política',
+            'Educação',
+            'Psicopedagogia',
+            'Direito Penal',
+            'Direito Civil',
+            'Direito Tributário',
+            'Direito Trabalhista',
+            'Direito Ambiental',
+            'Direito Internacional',
+            'Direito de Família',
+            'Direito Empresarial',
+            'Direito Constitucional',
+            'Economia',
+            'Administração de Empresas',
+            'Administração Pública',
+            'Contabilidade',
+            'Finanças',
+            'Marketing',
+            'Ciência da Computação',
+            'Sistemas de Informação',
+            'Engenharia de Software',
+            'Segurança da Informação',
+            'Análise de Dados',
+            'Inteligência Artificial',
+            'Matemática Aplicada',
+            'Estatística',
+            'Física Aplicada',
+            'Química Aplicada',
+            'Geografia',
+            'Literatura',
+            'Artes Visuais',
+            'Música',
+            'Teatro',
+            'Cinema',
+            'Fisioterapia',
+            'Terapia Ocupacional',
+            'Enfermagem',
+            'Saúde Pública',
+            'Psicologia Clínica',
+            'Medicina Esportiva',
+            'Logística',
+            'Comércio Exterior',
+            'Relações Internacionais',
+            'Gestão de Recursos Humanos',
+            'Engenharia Biomédica',
+            'Ciência de Dados'
+        ]
         menu_area = tk.OptionMenu(self.root, self.area_var, *areas_tecnicas)
         menu_area.config(width=20)
         menu_area.pack(pady=(0, 10))
@@ -114,10 +184,31 @@ class TranslationApp:
         menu_estilo.config(width=20)
         menu_estilo.pack(pady=(0, 10))
 
+        # Seleção do modelo para simplificação
+        label_modelo = tk.Label(
+            self.root,
+            text="Selecione o modelo OpenAI para simplificação:",
+            font=("Helvetica", 12)
+        )
+        label_modelo.pack(pady=(10, 0))
+        self.modelo_var = tk.StringVar(self.root)
+        self.modelo_var.set('gpt-3.5-turbo-0125')  # Valor padrão
+        modelos_disponiveis = [
+            'gpt-3.5-turbo-0125',
+            'gpt-4-turbo',
+            'gpt-4o-mini',
+            'gpt-4o',
+            'o1-mini',
+            'o1-preview'
+        ]
+        menu_modelo = tk.OptionMenu(self.root, self.modelo_var, *modelos_disponiveis)
+        menu_modelo.config(width=20)
+        menu_modelo.pack(pady=(0, 10))
+
         # Label de entrada
         label_entrada = tk.Label(
             self.root,
-            text="Digite o texto para traduzir e simplificar:",
+            text="Digite o texto para simplificar e traduzir:",
             font=("Helvetica", 12)
         )
         label_entrada.pack(pady=(10, 0))
@@ -138,7 +229,7 @@ class TranslationApp:
         # Botão de tradução
         botao_traduzir = tk.Button(
             self.root,
-            text="Traduzir e Simplificar",
+            text="Simplificar e Traduzir",
             command=self.traduzir_texto,
             bg="#4CAF50",
             fg="white",
@@ -149,7 +240,7 @@ class TranslationApp:
         # Label de saída
         label_saida = tk.Label(
             self.root,
-            text="Texto traduzido e simplificado:",
+            text="Texto simplificado e traduzido:",
             font=("Helvetica", 12)
         )
         label_saida.pack(pady=(10, 0))
@@ -169,13 +260,18 @@ class TranslationApp:
         area_tecnica = self.area_var.get()
         estilo = self.estilo_var.get()
         summarize = self.summarize_var.get()
+        modelo_selecionado = self.modelo_var.get()
 
         try:
-            # Simplificação com OpenAI
-            texto_simplificado = self.openai_service.simplify_text(texto, area_tecnica, estilo, summarize)
+            # Simplificação com OpenAI usando o modelo selecionado
+            texto_simplificado = self.openai_service.simplify_text(
+                texto, area_tecnica, estilo, summarize, modelo_selecionado
+            )
 
             # Tradução com AWS Translate
-            texto_traduzido = self.aws_translate_service.translate_text(texto_simplificado, codigo_idioma_destino)
+            texto_traduzido = self.aws_translate_service.translate_text(
+                texto_simplificado, codigo_idioma_destino
+            )
 
             # Exibe o resultado na caixa de saída
             self.mostrar_resultado(texto_traduzido)

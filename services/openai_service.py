@@ -7,8 +7,8 @@ from openai import OpenAI
 
 class OpenAIService:
     def __init__(self):
-        self.openai_client = None
         self.OPENAI_API_KEY = None
+        self.client = None  # Instância do cliente OpenAI
 
         # Carrega as credenciais OpenAI
         self.load_credentials()
@@ -21,19 +21,18 @@ class OpenAIService:
         load_dotenv()
         self.OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 
-        # Verifica se a chave da API está presente
         if not self.OPENAI_API_KEY:
             raise ValueError("Chave da API OpenAI faltando. Por favor, verifique o arquivo .env.")
 
     def init_openai_client(self):
         """Inicializa o cliente OpenAI."""
         try:
-            self.openai_client = OpenAI(api_key=self.OPENAI_API_KEY)
+            self.client = OpenAI(api_key=self.OPENAI_API_KEY)
         except Exception as e:
             raise ConnectionError(f"Falha ao inicializar o cliente OpenAI: {str(e)}")
 
-    def simplify_text(self, text: str, area_tecnica: str, estilo: str, summarize: bool) -> str:
-        """Simplifica (e opcionalmente resume) o texto usando a API da OpenAI."""
+    def simplify_text(self, text: str, area_tecnica: str, estilo: str, summarize: bool, model: str) -> str:
+        """Simplifica (e opcionalmente resume) o texto usando a API da OpenAI com o modelo selecionado."""
         if summarize:
             # Prompt para simplificar e resumir
             messages = [
@@ -78,8 +77,8 @@ class OpenAIService:
         max_retries = 5
         for attempt in range(max_retries):
             try:
-                response = self.openai_client.chat.completions.create(
-                    model="gpt-3.5-turbo",
+                response = self.client.chat.completions.create(
+                    model=model,
                     messages=messages,
                     max_tokens=1000,
                     temperature=0.7,
