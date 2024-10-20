@@ -64,16 +64,17 @@ Legibilidade, Métricas de Legibilidade.
 - **Bibliotecas Python necessárias**:
 
 ```plaintext
-python-dotenv~=1.0.1
-boto3~=1.35.37
-awscli~=1.35.2
+python-dotenv==1.0.1
+boto3==1.35.37
+awscli==1.35.2
 openai==1.51.2
-python-docx~=0.8.11
-reportlab~=3.6.13
-PyPDF2~=3.0.1
-ebooklib~=0.18
+python-docx==0.8.11
+reportlab==3.6.13
+PyPDF2==3.0.1
+ebooklib==0.18
 textstat==0.7.4
 langdetect==1.0.9
+pipdeptree==2.0.0
 ```
 
 ---
@@ -145,8 +146,6 @@ Desenvolvida com Tkinter para interação intuitiva.
 - **Modelo OpenAI**: Escolha do modelo para simplificação.
 - **Checkbox "Resumir"**: Resumo opcional.
 - **Botões de Exportação**: Exportar como TXT, PDF ou DOCX.
-
-
 
 
 ### 5.3 Métricas de Legibilidade
