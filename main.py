@@ -3,15 +3,12 @@
 import os
 import tkinter as tk
 from tkinter import END, Tk, messagebox, filedialog
-from tkinter import ttk
-from services.aws_translate_service import AwsTranslateService
-from services.openai_service import OpenAIService
+from services.api.aws_translate_service import AwsTranslateService
+from services.api.openai_service import OpenAIService
 from services.document_service import DocumentService
-from services.readability_service import ReadabilityService
-from services.bleu_score_service import BleuScoreService  # Importação adicionada
+from services.language.readability_service import ReadabilityService
+from services.language.bleu_score_service import BleuScoreService
 
-# Certifique-se de que a biblioteca sacrebleu esteja instalada:
-# pip install sacrebleu
 
 # Constants
 LANGUAGES = {

@@ -27,7 +27,7 @@ Exemplo de Uso:
 """
 
 import sacrebleu
-from services.aws_translate_service import AwsTranslateService
+from services.api.aws_translate_service import AwsTranslateService
 
 
 class BleuScoreService:
