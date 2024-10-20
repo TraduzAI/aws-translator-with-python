@@ -3,7 +3,7 @@
 import os
 import tkinter as tk
 from tkinter import END, Tk, messagebox, filedialog
-from tkinter import ttk  # Import necessary for using ttk widgets
+from tkinter import ttk
 from services.aws_translate_service import AwsTranslateService
 from services.openai_service import OpenAIService
 from services.document_service import DocumentService
@@ -40,76 +40,19 @@ LANGUAGES = {
 }
 
 AREAS_TECNICAS = [
-    'Geral',
-    'Medicina',
-    'Psicologia',
-    'Direito',
+    'Saúde, Medicina e Psicologia',
     'Matemática',
-    'Química',
     'Física',
-    'Programação',
-    'Filosofia',
-    'Engenharia Civil',
-    'Engenharia Mecânica',
-    'Engenharia Elétrica',
-    'Engenharia Química',
-    'Engenharia de Produção',
-    'Engenharia de Computação',
-    'Engenharia Ambiental',
-    'Biologia',
-    'Bioquímica',
-    'Genética',
-    'Medicina Veterinária',
-    'Nutrição',
-    'Biomedicina',
-    'Sociologia',
-    'Antropologia',
-    'Ciência Política',
-    'Educação',
-    'Psicopedagogia',
-    'Direito Penal',
-    'Direito Civil',
-    'Direito Tributário',
-    'Direito Trabalhista',
-    'Direito Ambiental',
-    'Direito Internacional',
-    'Direito de Família',
-    'Direito Empresarial',
-    'Direito Constitucional',
-    'Economia',
-    'Administração de Empresas',
-    'Administração Pública',
-    'Contabilidade',
-    'Finanças',
-    'Marketing',
-    'Ciência da Computação',
-    'Sistemas de Informação',
-    'Engenharia de Software',
-    'Segurança da Informação',
-    'Análise de Dados',
-    'Inteligência Artificial',
-    'Matemática Aplicada',
     'Estatística',
-    'Física Aplicada',
-    'Química Aplicada',
-    'Geografia',
-    'Literatura',
-    'Artes Visuais',
-    'Música',
-    'Teatro',
-    'Cinema',
-    'Fisioterapia',
-    'Terapia Ocupacional',
-    'Enfermagem',
-    'Saúde Pública',
-    'Psicologia Clínica',
-    'Medicina Esportiva',
-    'Logística',
-    'Comércio Exterior',
-    'Relações Internacionais',
-    'Gestão de Recursos Humanos',
-    'Engenharia Biomédica',
-    'Ciência de Dados'
+    'Ciência da Computação',
+    'Ciência de Dados e Aprendizado de Máquina',
+    'Ciências Biológicas',
+    'Ciências Sociais',
+    'Direito',
+    'Engenharia',
+    'Administração e Economia',
+    'Artes e Humanidades',
+    'Comércio e Logística'
 ]
 
 ESTILOS = [
@@ -117,16 +60,7 @@ ESTILOS = [
     'Informal',
     'Técnico',
     'Conversacional',
-    'Persuasivo',
-    'Narrativo',
-    'Acadêmico',
-    'Conciso',
-    'Humorístico',
-    'Descritivo',
-    'Diretivo',
-    'Objetivo',
-    'Inspirador',
-    'Jargão Especializado'
+    'Persuasivo'
 ]
 
 MODELOS_DISPONIVEIS = [
@@ -163,7 +97,8 @@ class TranslationApp:
     def setup_root_window(self):
         """Initial configurations of the main window."""
         self.root.geometry("1200x700")  # Adjusted window size
-        self.root.title("Sistema de Tradução e Simplificação de Textos Técnicos")
+        self.root.title("TraduzAI")
+        self.root.subtitle = "Uma Solução Personalizada para Tradução Eficaz e Fluente em Diferentes Contextos"
 
     def initialize_services(self):
         """Initializes the necessary services."""
@@ -228,17 +163,18 @@ class TranslationApp:
         """Creates the application title."""
         title_label = tk.Label(
             self.root,
-            text="Sistema de Tradução e Simplificação de Textos Técnicos",
-            font=("Helvetica", 16, "bold")
+            text="TraduzAI\n"
+                 "Uma Solução Personalizada para Tradução Eficaz e Fluente em Diferentes Contextos",
+            font=("Helvetica", 15, "bold")
         )
         title_label.pack(pady=10)
 
     def create_option_menus(self, parent):
         """Creates the option menus inside the provided frame."""
-        self.create_option_menu(parent, "Selecione o idioma de destino:", self.destino_var, LANGUAGES.keys())
-        self.create_option_menu(parent, "Selecione a área técnica:", self.area_var, AREAS_TECNICAS)
-        self.create_option_menu(parent, "Selecione o estilo de escrita:", self.estilo_var, ESTILOS)
-        self.create_option_menu(parent, "Selecione o modelo OpenAI para simplificação:", self.modelo_var,
+        self.create_option_menu(parent, "Idioma de destino:", self.destino_var, LANGUAGES.keys())
+        self.create_option_menu(parent, "Área técnica:", self.area_var, AREAS_TECNICAS)
+        self.create_option_menu(parent, "Estilo de escrita:", self.estilo_var, ESTILOS)
+        self.create_option_menu(parent, "Modelo OpenAI:", self.modelo_var,
                                 MODELOS_DISPONIVEIS)
 
     @staticmethod
@@ -254,7 +190,7 @@ class TranslationApp:
         """Creates the checkbox to summarize the text inside the provided frame."""
         checkbox_summarize = tk.Checkbutton(
             parent,
-            text="Resumir o texto",
+            text="Resumir",
             variable=self.summarize_var,
             font=("Helvetica", 12)
         )
@@ -264,7 +200,7 @@ class TranslationApp:
         """Creates the translation button inside the provided frame."""
         self.create_button(
             parent=parent,
-            text="Simplificar e Traduzir",
+            text="Simplificar Linguagem e Traduzir",
             command=self.traduzir_texto,
             bg_color="#4CAF50",
             padx=20,
@@ -275,7 +211,7 @@ class TranslationApp:
         """Creates the text input box."""
         label_entrada = tk.Label(
             parent,
-            text="Digite o texto para simplificar e traduzir:",
+            text="Texto para Simplificar e Traduzir:",
             font=("Helvetica", 12)
         )
         label_entrada.pack(pady=(10, 0))
@@ -293,7 +229,7 @@ class TranslationApp:
         """Creates the text output box."""
         label_saida = tk.Label(
             parent,
-            text="Texto simplificado e traduzido:",
+            text="Texto Simplificado e Traduzido:",
             font=("Helvetica", 12)
         )
         label_saida.pack(pady=(10, 0))
@@ -323,7 +259,7 @@ class TranslationApp:
 
         for i, name in enumerate(metric_names):
             label_name = tk.Label(original_metrics_frame, text=name + ":", anchor='w', font=("Helvetica", 11, "bold"))
-            label_name.grid(row=i, column=0, sticky='w', padx=(0, 10))
+            label_name.grid(row=i, column=0, sticky='w', padx=(0, 5))
             label_value = tk.Label(original_metrics_frame, text="", anchor='e', font=("Helvetica", 11))
             label_value.grid(row=i, column=1, sticky='e')
             self.original_metric_labels[name] = label_value
@@ -337,7 +273,8 @@ class TranslationApp:
             "5 - Índice ARI:\n\tUsa caracteres por palavra e palavras por frase;\n\tValores mais baixos indicam texto mais simples.\n"
             "6 - Pontuação de Dale-Chall:\n\tCompara com uma lista de palavras familiares;\n\tValores mais baixos indicam texto mais fácil."
         )
-        original_desc_label = tk.Label(original_frame, text=original_description, justify='left', wraplength=600, font=("Courier", 10))
+        original_desc_label = tk.Label(original_frame, text=original_description, justify='left', wraplength=600,
+                                       font=("Courier", 10))
         original_desc_label.pack(padx=10, pady=(10, 0))
 
         # Frame para as métricas do texto simplificado
@@ -353,7 +290,7 @@ class TranslationApp:
 
         for i, name in enumerate(metric_names):
             label_name = tk.Label(simplified_metrics_frame, text=name + ":", anchor='w', font=("Helvetica", 11, "bold"))
-            label_name.grid(row=i, column=0, sticky='w', padx=(0, 10))
+            label_name.grid(row=i, column=0, sticky='w', padx=(0, 5))
             label_value = tk.Label(simplified_metrics_frame, text="", anchor='e', font=("Helvetica", 11))
             label_value.grid(row=i, column=1, sticky='e')
             self.simplified_metric_labels[name] = label_value
