@@ -8,7 +8,9 @@ pacotes = [
     'python-docx',
     'reportlab',
     'PyPDF2',
-    'ebooklib'
+    'ebooklib',
+    'textstat',
+    'langdetect'
 ]
 
 for nome_pacote in pacotes:

@@ -22,6 +22,11 @@ Para facilitar a integração com outras plataformas, o projeto disponibiliza fu
 em diferentes formatos, como **TXT**, **PDF** e **DOCX**, permitindo que empresas automatizem o atendimento a clientes
 em diversos idiomas e incorporem a funcionalidade de tradução em suas aplicações.
 
+Além disso, o sistema realiza análises de legibilidade utilizando seis métricas distintas: **Índice de Flesch Reading
+Ease**, **Grau de Flesch-Kincaid**, **Índice SMOG**, **Índice de Coleman-Liau**, **Índice Automático de Legibilidade (ARI)** 
+e **Pontuação de Dale-Chall**. Essas métricas auxiliam na avaliação da facilidade de leitura e compreensão dos
+textos traduzidos e simplificados, garantindo que a linguagem seja adequada ao público-alvo.
+
 O projeto também inclui técnicas de monitoramento da qualidade das traduções e ajuste fino dos modelos de **Deep
 Learning**, utilizando métricas como o **BLEU score** e o feedback dos usuários. O processo contínuo de aprendizado visa
 melhorar a precisão e fluidez das traduções, especialmente em domínios especializados com termos técnicos e jargões
@@ -34,7 +39,8 @@ disponibilidade.
 ### Palavras-chave
 
 Tradução Automática, Jargões Técnicos, Deep Learning, Redes Neurais Recorrentes, Transformer, Amazon Translate,
-Personalização, Feedback do Usuário, Atendimento ao Cliente, Exportação de Arquivos, Monitoramento de Qualidade.
+Personalização, Feedback do Usuário, Atendimento ao Cliente, Exportação de Arquivos, Monitoramento de Qualidade,
+Legibilidade, Métricas de Legibilidade.
 
 ---
 
@@ -55,7 +61,20 @@ Personalização, Feedback do Usuário, Atendimento ao Cliente, Exportação de 
 - Python 3.12 ou superior
 - Conta na AWS com acesso ao Amazon Translate
 - Chave de API da OpenAI
-- Bibliotecas Python listadas no `requirements.txt`
+- **Bibliotecas Python necessárias**:
+
+```plaintext
+python-dotenv~=1.0.1
+boto3~=1.35.37
+awscli~=1.35.2
+openai==1.51.2
+python-docx~=0.8.11
+reportlab~=3.6.13
+PyPDF2~=3.0.1
+ebooklib~=0.18
+textstat==0.7.4
+langdetect==1.0.9
+```
 
 ---
 
@@ -68,9 +87,9 @@ git clone https://github.com/TraduzAI/aws-translator-with-python
 cd aws-translator-with-python
 ```
 
-### 2.2 Criar e Configurar o Arquivo `.env`
+### 2.2 Criar e Configurar o Arquivo .env
 
-Crie um arquivo `.env` na raiz do projeto com o seguinte conteúdo:
+Crie um arquivo .env na raiz do projeto com o seguinte conteúdo:
 
 ```dotenv
 AWS_ACCESS_KEY_ID=suachaveAWS
@@ -91,7 +110,7 @@ pip install -r requirements.txt
 
 A estrutura dos diretórios é a seguinte:
 
-```
+```plaintext
 aws-translator-with-python/
 ├── main.py
 ├── requirements.txt
@@ -99,15 +118,9 @@ aws-translator-with-python/
     ├── __init__.py
     ├── aws_translate_service.py
     ├── openai_service.py
-    └── file_service.py
+    ├── document_service.py
+    └── readability_service.py
 ```
-
-- **main.py**: contém a interface gráfica utilizando Tkinter e faz uso dos serviços de tradução e simplificação.
-- **services/aws_translate_service.py**: lógica para tradução utilizando o AWS Translate.
-- **services/openai_service.py**: lógica para simplificação de texto utilizando a API da OpenAI.
-- **services/file_service.py**: lógica para importação e exportação de arquivos.
-
----
 
 ## 4. Como Executar
 
@@ -133,6 +146,23 @@ Desenvolvida com Tkinter para interação intuitiva.
 - **Checkbox "Resumir"**: Resumo opcional.
 - **Botões de Exportação**: Exportar como TXT, PDF ou DOCX.
 
+
+
+
+### 5.3 Métricas de Legibilidade
+
+#### Métricas do Texto Original e Texto Simplificado
+
+- **Índice de Flesch Reading Ease**: Mede a facilidade de leitura; valores mais altos indicam texto mais fácil.
+- **Grau de Flesch-Kincaid**: Indica o nível escolar necessário; valores mais baixos indicam texto mais acessível.
+- **Índice SMOG**: Estima os anos de educação necessários; valores mais baixos são melhores.
+- **Índice de Coleman-Liau**: Baseado em caracteres por palavra e palavras por frase; valores mais baixos indicam maior
+  facilidade.
+- **Índice Automático de Legibilidade (ARI)**: Usa caracteres por palavra e palavras por frase; valores mais baixos
+  indicam texto mais simples.
+- **Pontuação de Dale-Chall**: Compara com uma lista de palavras familiares; valores mais baixos indicam texto mais
+  fácil.
+
 ---
 
 ## 6. Contribuição
@@ -150,12 +180,3 @@ Desenvolvida com Tkinter para interação intuitiva.
 Este projeto está sob a Licença MIT. Consulte o arquivo LICENSE para mais detalhes.
 
 ---
-
-## Considerações Finais
-
-Com uma interface robusta e funcionalidades aprimoradas, o TraduzAI oferece traduções precisas e simplificadas, mantendo
-as ideias originais do texto. A opção de resumo adiciona flexibilidade e a exportação em múltiplos formatos facilita a
-integração com outras plataformas.
-
-Se encontrar problemas ou tiver sugestões, abra uma issue ou envie um Pull Request. Sua colaboração é essencial para o
-sucesso deste projeto!
