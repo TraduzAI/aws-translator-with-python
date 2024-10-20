@@ -8,6 +8,10 @@ from services.aws_translate_service import AwsTranslateService
 from services.openai_service import OpenAIService
 from services.document_service import DocumentService
 from services.readability_service import ReadabilityService
+from services.bleu_score_service import BleuScoreService  # Importação adicionada
+
+# Certifique-se de que a biblioteca sacrebleu esteja instalada:
+# pip install sacrebleu
 
 # Constants
 LANGUAGES = {
@@ -73,6 +77,7 @@ MODELOS_DISPONIVEIS = [
 
 class TranslationApp:
     def __init__(self, root: Tk) -> None:
+        self.bleu_score_label = None
         self.original_metric_labels = None
         self.simplified_metric_labels = None
         self.simplified_metrics_text = None
@@ -88,6 +93,7 @@ class TranslationApp:
         self.document_service = None
         self.openai_service = None
         self.aws_translate_service = None
+        self.bleu_score_service = None  # Adicionado
         self.root = root
         self.setup_root_window()
         self.initialize_services()
@@ -107,6 +113,7 @@ class TranslationApp:
             self.openai_service = OpenAIService()
             self.document_service = DocumentService()
             self.readability_service = ReadabilityService()  # Initialize ReadabilityService
+            self.bleu_score_service = BleuScoreService()  # Initialize BleuScoreService
         except Exception as e:
             messagebox.showerror("Erro ao Inicializar", str(e))
             self.root.destroy()
@@ -295,6 +302,14 @@ class TranslationApp:
             label_value.grid(row=i, column=1, sticky='e')
             self.simplified_metric_labels[name] = label_value
 
+        # Adiciona o label para o BLEU Score
+        row_index = len(metric_names)
+        bleu_label_name = tk.Label(simplified_metrics_frame, text='BLEU Score:', anchor='w',
+                                   font=("Helvetica", 11, "bold"))
+        bleu_label_name.grid(row=row_index, column=0, sticky='w', padx=(0, 5))
+        self.bleu_score_label = tk.Label(simplified_metrics_frame, text="", anchor='e', font=("Helvetica", 11))
+        self.bleu_score_label.grid(row=row_index, column=1, sticky='e')
+
     @staticmethod
     def create_button(parent, text, command, bg_color, **pack_options):
         """Helper function to create buttons.
@@ -317,7 +332,7 @@ class TranslationApp:
         button.pack(**pack_options)
 
     def traduzir_texto(self) -> None:
-        """Performs the simplification and translation of the inserted text."""
+        """Realiza a simplificação e tradução do texto inserido."""
         texto = self.texto_entrada.get("1.0", END).strip()
         if not texto:
             messagebox.showwarning("Entrada Vazia", "Por favor, insira um texto para simplificar e traduzir.")
@@ -330,24 +345,30 @@ class TranslationApp:
         modelo_selecionado = self.modelo_var.get()
 
         try:
-            # Simplify the text using OpenAI API
+            # Simplifica o texto usando a API OpenAI
             texto_simplificado = self.openai_service.simplify_text(
                 texto, area_tecnica, estilo, summarize, modelo_selecionado
             )
 
-            # Calculate readability metrics for the original text
+            # Calcula as métricas de legibilidade para o texto original
             metrics_original = self.readability_service.calculate_readability(texto)
 
-            # Calculate readability metrics for the simplified text
+            # Calcula as métricas de legibilidade para o texto simplificado
             metrics_simplified = self.readability_service.calculate_readability(texto_simplificado)
 
-            # Update the metrics
-            self.update_readability_metrics(metrics_original, metrics_simplified)
-
-            # Translate the simplified text
-            texto_traduzido = self.aws_translate_service.translate_text(
+            # Traduz o texto simplificado
+            texto_traduzido, source_language_code = self.aws_translate_service.translate_text(
                 texto_simplificado, codigo_idioma_destino
             )
+
+            # Calcula o BLEU Score
+            bleu_score = self.bleu_score_service.compute_bleu_score(
+                texto_simplificado, texto_traduzido, source_language_code
+            )
+
+            # Atualiza as métricas, incluindo o BLEU Score
+            self.update_readability_metrics(metrics_original, metrics_simplified, bleu_score)
+
             self.mostrar_resultado(texto_traduzido)
         except Exception as e:
             messagebox.showerror("Erro", str(e))
@@ -365,7 +386,7 @@ class TranslationApp:
         }
         return mapping.get(name)
 
-    def update_readability_metrics(self, metrics_original, metrics_simplified):
+    def update_readability_metrics(self, metrics_original, metrics_simplified, bleu_score=None):
         """Atualiza a exibição das métricas de legibilidade."""
         # Atualiza as métricas do texto original
         for name, label in self.original_metric_labels.items():
@@ -378,6 +399,12 @@ class TranslationApp:
             key = self.metric_key_from_name(name)
             value = metrics_simplified.get(key, 'N/A')
             label.config(text=f"{value:.2f}" if isinstance(value, float) else value)
+
+        # Atualiza o BLEU Score
+        if bleu_score is not None:
+            self.bleu_score_label.config(text=f"{bleu_score:.2f}")
+        else:
+            self.bleu_score_label.config(text="")
 
     def mostrar_resultado(self, texto: str) -> None:
         """Displays the result of the translation and simplification."""

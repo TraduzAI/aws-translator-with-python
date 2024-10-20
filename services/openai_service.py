@@ -196,7 +196,7 @@ class OpenAIService:
         max_retries = 5
         for attempt in range(max_retries):
             try:
-                response = self.client.ChatCompletion.create(
+                response = self.client.chat.completions.create(
                     model=model,
                     messages=messages,
                     max_tokens=4096,
@@ -205,7 +205,7 @@ class OpenAIService:
                     frequency_penalty=0,
                     presence_penalty=0
                 )
-                return response.choices[0].message['content'].strip()
+                return response.choices[0].message.content.strip()
             except Exception as e:
                 if attempt == max_retries - 1:
                     raise Exception(f"Erro ao simplificar o texto após várias tentativas: {str(e)}")
