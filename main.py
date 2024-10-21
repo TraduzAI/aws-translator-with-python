@@ -575,7 +575,7 @@ class TranslationApp:
             text (str): Texto exibido no botão.
             command (callable): Função chamada quando o botão é clicado.
             bg_color (str): Cor de fundo do botão.
-            **pack_options: Opções adicionais para o método pack() ou grid().
+            **pack_options: opções adicionais para o metodo pack() ou grid().
         """
         button = tk.Button(
             parent,
@@ -591,7 +591,7 @@ class TranslationApp:
         """
         Realiza a simplificação e tradução do texto inserido.
 
-        Este método executa os seguintes passos:
+        Este metodo executa os seguintes passos:
             1. Obtém o texto de entrada da interface.
             2. Coleta os parâmetros selecionados pelo usuário.
             3. Utiliza o serviço OpenAI para simplificar o texto.
