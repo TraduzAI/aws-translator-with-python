@@ -12,13 +12,13 @@ Classes:
     OpenAIService: Classe responsável pela interação com a API da OpenAI para simplificação de textos.
 
 Dependências:
-    - boto3: Biblioteca da AWS para interagir com os serviços da AWS.
-    - dotenv: Biblioteca para carregar variáveis de ambiente a partir de um arquivo .env.
-    - openai: Biblioteca oficial da OpenAI para interagir com a API OpenAI.
-    - os: Biblioteca padrão para interagir com o sistema operacional.
-    - time: Biblioteca padrão para manipulação de tempo.
-    - random: Biblioteca padrão para geração de números aleatórios.
-    - typing: Biblioteca padrão para anotações de tipos.
+    - boto3: biblioteca da AWS para interagir com os serviços da AWS.
+    - dotenv: biblioteca para carregar variáveis de ambiente a partir de um arquivo .env.
+    - openai: biblioteca oficial da OpenAI para interagir com a API OpenAI.
+    - os: biblioteca padrão para interagir com o sistema operacional.
+    - time: biblioteca padrão para manipulação de tempo.
+    - random: biblioteca padrão para geração de números aleatórios.
+    - typing: biblioteca padrão para anotações de tipos.
 
 Exemplo de Uso:
     >>> from services.openai_service import OpenAIService
@@ -40,6 +40,7 @@ import time
 import random
 from dotenv import load_dotenv
 import openai
+from typing import List, Optional
 
 
 class OpenAIService:
@@ -63,8 +64,8 @@ class OpenAIService:
             2. Inicializa o cliente OpenAI com as credenciais carregadas.
 
         Exceções:
-            - ValueError: Se a chave da API OpenAI estiver faltando no arquivo .env.
-            - ConnectionError: Se houver falha ao inicializar o cliente OpenAI.
+            - ValueError: se a chave da API OpenAI estiver faltando no arquivo .env.
+            - ConnectionError: se houver falha ao inicializar o cliente OpenAI.
         """
         self.OPENAI_API_KEY = None
         self.client = None  # Instância do cliente OpenAI
@@ -85,7 +86,7 @@ class OpenAIService:
             3. Verifica se a chave da API está presente; caso contrário, lança uma exceção.
 
         Exceções:
-            - ValueError: Se a chave da API OpenAI estiver faltando no arquivo .env.
+            - ValueError: se a chave da API OpenAI estiver faltando no arquivo .env.
 
         Teoria:
             - As credenciais da OpenAI são necessárias para autenticar e autorizar solicitações à API OpenAI.
@@ -105,7 +106,7 @@ class OpenAIService:
         que será utilizada para realizar chamadas à API de simplificação de textos.
 
         Exceções:
-            - ConnectionError: Se houver falha ao inicializar o cliente OpenAI devido a credenciais inválidas
+            - ConnectionError: se houver falha ao inicializar o cliente OpenAI devido a credenciais inválidas
               ou problemas de conexão.
 
         Teoria:
@@ -124,7 +125,14 @@ class OpenAIService:
             area_tecnica: str,
             estilo: str,
             summarize: bool,
-            model: str
+            model: str,
+            complexity_level: str = 'Intermediário',
+            focus_aspects: Optional[List[str]] = None,
+            temperature: float = 0.8,
+            max_tokens: int = 4096,
+            top_p: float = 1.0,
+            frequency_penalty: float = 0.0,
+            presence_penalty: float = 0.0
     ) -> str:
         """
         Simplifica (e opcionalmente resume) o texto fornecido usando a API da OpenAI.
@@ -140,6 +148,13 @@ class OpenAIService:
             estilo (str): O estilo de escrita desejado (e.g., "informal", "formal", "casual").
             summarize (bool): Indica se o texto deve ser resumido além de ser simplificado.
             model (str): O modelo da OpenAI a ser utilizado (e.g., "gpt-4", "gpt-3.5-turbo").
+            complexity_level (str): Nível de complexidade da simplificação (e.g., "Básico", "Intermediário", "Avançado").
+            focus_aspects (List[str], optional): Aspectos a serem priorizados na simplificação (e.g., ["clareza", "concisão"]).
+            temperature (float): Controla a aleatoriedade da resposta.
+            max_tokens (int): Define o tamanho máximo da resposta.
+            top_p (float): Controla a aleatoriedade via probabilidade cumulativa.
+            frequency_penalty (float): Controla a repetição de palavras.
+            presence_penalty (float): Controla a diversidade da resposta.
 
         Retorna:
             str: O texto simplificado (e opcionalmente resumido) retornado pela API da OpenAI.
@@ -152,46 +167,41 @@ class OpenAIService:
             - A simplificação de texto envolve reescrever o conteúdo de maneira mais acessível, mantendo a essência das informações.
             - A funcionalidade de sumarização reduz o texto mantendo os pontos-chave, facilitando a compreensão rápida do conteúdo.
         """
+        # Construir a descrição do nível de complexidade
+        complexity_description = ''
+        if complexity_level == 'Básico':
+            complexity_description = 'usando linguagem simples, adequada para iniciantes'
+        elif complexity_level == 'Intermediário':
+            complexity_description = 'usando linguagem moderadamente simplificada, adequada para o público em geral'
+        elif complexity_level == 'Avançado':
+            complexity_description = 'mantendo detalhes técnicos, adequado para público avançado'
+
+        # Construir a descrição dos aspectos de foco
+        focus_description = ''
+        if focus_aspects:
+            focus_description = 'focando em ' + ', '.join(focus_aspects)
+
+        # Construir o conteúdo do usuário
+        user_content = f"Por favor, reescreva o seguinte texto {complexity_description}"
+        if focus_description:
+            user_content += f", {focus_description}"
+        user_content += f", utilizando um estilo {estilo}."
         if summarize:
-            # Prompt para simplificar e resumir
-            messages = [
-                {
-                    "role": "system",
-                    "content": (
-                        f"Você é um especialista em {area_tecnica}. Seu objetivo é tornar conceitos dessa área "
-                        f"mais acessíveis a pessoas leigas, resumindo o conteúdo sem perder informações essenciais."
-                    )
-                },
-                {
-                    "role": "user",
-                    "content": (
-                        f"Por favor, resuma e reescreva o seguinte texto de forma simples e clara, "
-                        f"utilizando um estilo {estilo}. Garanta que o resumo seja fácil de entender, "
-                        f"removendo termos técnicos complexos e usando linguagem cotidiana:\n\nTexto: {text}"
-                    )
-                }
-            ]
-        else:
-            # Prompt para apenas simplificar sem resumir
-            messages = [
-                {
-                    "role": "system",
-                    "content": (
-                        f"Você é um especialista em {area_tecnica}. Seu objetivo é tornar conceitos dessa área "
-                        f"mais acessíveis a pessoas leigas."
-                    )
-                },
-                {
-                    "role": "user",
-                    "content": (
-                        f"Por favor, reescreva o seguinte texto de forma simples e clara, "
-                        f"mas mantendo todas as informações originais. "
-                        f"O objetivo não é resumir, mas tornar o texto acessível para pessoas que não são especialistas em {area_tecnica}, "
-                        f"utilizando um estilo {estilo}. Garanta que o conteúdo seja fácil de entender, "
-                        f"removendo termos técnicos complexos e usando linguagem cotidiana:\n\nTexto: {text}"
-                    )
-                }
-            ]
+            user_content += " Por favor, também resuma o texto, mantendo as informações essenciais."
+        user_content += f"\n\nTexto:\n\"\"\"\n{text}\n\"\"\""
+
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    f"Você é um(a) especialista em {area_tecnica}. Seu objetivo é tornar conceitos dessa área mais acessíveis a pessoas leigas."
+                )
+            },
+            {
+                "role": "user",
+                "content": user_content
+            }
+        ]
 
         max_retries = 5
         for attempt in range(max_retries):
@@ -199,11 +209,11 @@ class OpenAIService:
                 response = self.client.chat.completions.create(
                     model=model,
                     messages=messages,
-                    max_tokens=4096,
-                    temperature=0.8,
-                    top_p=1,
-                    frequency_penalty=0,
-                    presence_penalty=0
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    top_p=top_p,
+                    frequency_penalty=frequency_penalty,
+                    presence_penalty=presence_penalty
                 )
                 return response.choices[0].message.content.strip()
             except Exception as e:

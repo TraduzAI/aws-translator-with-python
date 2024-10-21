@@ -9,7 +9,6 @@ from services.document_service import DocumentService
 from services.language.readability_service import ReadabilityService
 from services.language.bleu_score_service import BleuScoreService
 
-
 # Constants
 LANGUAGES = {
     'Africâner': 'af',
@@ -71,6 +70,8 @@ MODELOS_DISPONIVEIS = [
     'gpt-4o'
 ]
 
+COMPLEXITY_LEVELS = ['Básico', 'Intermediário', 'Avançado']
+
 
 class TranslationApp:
     def __init__(self, root: Tk) -> None:
@@ -86,6 +87,12 @@ class TranslationApp:
         self.destino_var = None
         self.area_var = None
         self.estilo_var = None
+        self.complexity_var = None
+        self.focus_clarity_var = None
+        self.focus_conciseness_var = None
+        self.focus_formality_var = None
+        self.temperature_var = None
+        self.max_tokens_var = None
         self.readability_service = None
         self.document_service = None
         self.openai_service = None
@@ -99,7 +106,7 @@ class TranslationApp:
 
     def setup_root_window(self):
         """Initial configurations of the main window."""
-        self.root.geometry("1200x700")  # Adjusted window size
+        self.root.geometry("1200x900")  # Ajustado para acomodar novas opções
         self.root.title("TraduzAI")
         self.root.subtitle = "Uma Solução Personalizada para Tradução Eficaz e Fluente em Diferentes Contextos"
 
@@ -119,10 +126,16 @@ class TranslationApp:
     def initialize_variables(self):
         """Initializes variables used in the interface."""
         self.estilo_var = tk.StringVar(self.root, value='Informal')
-        self.area_var = tk.StringVar(self.root, value='Geral')
+        self.area_var = tk.StringVar(self.root, value='Ciência da Computação')
         self.destino_var = tk.StringVar(self.root, value='Português')
         self.summarize_var = tk.BooleanVar()
         self.modelo_var = tk.StringVar(self.root, value='gpt-3.5-turbo-0125')
+        self.complexity_var = tk.StringVar(self.root, value='Intermediário')
+        self.focus_clarity_var = tk.BooleanVar()
+        self.focus_conciseness_var = tk.BooleanVar()
+        self.focus_formality_var = tk.BooleanVar()
+        self.temperature_var = tk.DoubleVar(self.root, value=0.8)
+        self.max_tokens_var = tk.IntVar(self.root, value=1500)  # Ajustado para evitar exceder limites
 
     def create_widgets(self) -> None:
         """Creates the widgets of the graphical interface."""
@@ -134,7 +147,7 @@ class TranslationApp:
 
         # Configure grid for 'main_frame'
         main_frame.columnconfigure(0, weight=1, uniform='column')
-        main_frame.columnconfigure(1, weight=1, uniform='column')
+        main_frame.columnconfigure(1, weight=2, uniform='column')
         main_frame.columnconfigure(2, weight=1, uniform='column')
         main_frame.rowconfigure(0, weight=1)
 
@@ -152,6 +165,9 @@ class TranslationApp:
 
         # Create widgets in left_frame
         self.create_option_menus(left_frame)
+        self.create_complexity_option_menu(left_frame)
+        self.create_focus_aspects_checkboxes(left_frame)
+        self.create_api_parameter_entries(left_frame)
         self.create_summarize_checkbox(left_frame)
         self.create_translate_button(left_frame)
 
@@ -169,17 +185,9 @@ class TranslationApp:
             self.root,
             text="TraduzAI\n"
                  "Uma Solução Personalizada para Tradução Eficaz e Fluente em Diferentes Contextos",
-            font=("Helvetica", 15, "bold")
+            font=("Helvetica", 16, "bold")
         )
         title_label.pack(pady=10)
-
-    def create_option_menus(self, parent):
-        """Creates the option menus inside the provided frame."""
-        self.create_option_menu(parent, "Idioma de destino:", self.destino_var, LANGUAGES.keys())
-        self.create_option_menu(parent, "Área técnica:", self.area_var, AREAS_TECNICAS)
-        self.create_option_menu(parent, "Estilo de escrita:", self.estilo_var, ESTILOS)
-        self.create_option_menu(parent, "Modelo OpenAI:", self.modelo_var,
-                                MODELOS_DISPONIVEIS)
 
     @staticmethod
     def create_option_menu(parent, label_text, variable, options):
@@ -190,6 +198,55 @@ class TranslationApp:
         menu.config(width=25)
         menu.pack(pady=(0, 10))
 
+    def create_option_menus(self, parent):
+        """Creates the option menus inside the provided frame."""
+        self.create_option_menu(parent, "Idioma de destino:", self.destino_var, LANGUAGES.keys())
+        self.create_option_menu(parent, "Área técnica:", self.area_var, AREAS_TECNICAS)
+        self.create_option_menu(parent, "Estilo de escrita:", self.estilo_var, ESTILOS)
+        self.create_option_menu(parent, "Modelo OpenAI:", self.modelo_var, MODELOS_DISPONIVEIS)
+
+    def create_complexity_option_menu(self, parent):
+        """Creates the complexity level option menu."""
+        self.create_option_menu(parent, "Nível de Complexidade:", self.complexity_var, COMPLEXITY_LEVELS)
+
+    def create_focus_aspects_checkboxes(self, parent):
+        """Creates the checkboxes to focus on specific aspects."""
+        label = tk.Label(parent, text="Focar em:", font=("Helvetica", 12))
+        label.pack(pady=(10, 0))
+        checkbox_clarity = tk.Checkbutton(parent, text="Clareza", variable=self.focus_clarity_var,
+                                          font=("Helvetica", 12))
+        checkbox_clarity.pack(pady=(0, 5))
+        checkbox_conciseness = tk.Checkbutton(parent, text="Concisão", variable=self.focus_conciseness_var,
+                                              font=("Helvetica", 12))
+        checkbox_conciseness.pack(pady=(0, 5))
+        checkbox_formality = tk.Checkbutton(parent, text="Formalidade", variable=self.focus_formality_var,
+                                            font=("Helvetica", 12))
+        checkbox_formality.pack(pady=(0, 5))
+
+    def create_api_parameter_entries(self, parent):
+        """Creates the entries to adjust OpenAI API parameters."""
+        label = tk.Label(parent, text="Parâmetros da API OpenAI:", font=("Helvetica", 12, "bold"))
+        label.pack(pady=(10, 0))
+
+        # Frame principal para os parâmetros
+        params_frame = tk.Frame(parent)
+        params_frame.pack(pady=(5, 5))
+
+        # Temperature
+        temperature_label = tk.Label(params_frame, text="Temperature:", font=("Helvetica", 12))
+        temperature_label.grid(row=0, column=0, sticky='e', padx=5, pady=5)
+        temperature_entry = tk.Entry(params_frame, textvariable=self.temperature_var, width=5)
+        temperature_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        # Max Tokens
+        max_tokens_label = tk.Label(params_frame, text="Max Tokens:", font=("Helvetica", 12))
+        max_tokens_label.grid(row=1, column=0, sticky='e', padx=5, pady=5)
+        max_tokens_entry = tk.Entry(params_frame, textvariable=self.max_tokens_var, width=5)
+        max_tokens_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        # Centralizar o frame dos parâmetros
+        params_frame.pack(anchor='center')
+
     def create_summarize_checkbox(self, parent):
         """Creates the checkbox to summarize the text inside the provided frame."""
         checkbox_summarize = tk.Checkbutton(
@@ -198,7 +255,7 @@ class TranslationApp:
             variable=self.summarize_var,
             font=("Helvetica", 12)
         )
-        checkbox_summarize.pack(pady=(5, 10))
+        checkbox_summarize.pack(pady=(10, 10))
 
     def create_translate_button(self, parent):
         """Creates the translation button inside the provided frame."""
@@ -216,10 +273,10 @@ class TranslationApp:
         label_entrada = tk.Label(
             parent,
             text="Texto para Simplificar e Traduzir:",
-            font=("Helvetica", 12)
+            font=("Helvetica", 12, "bold")
         )
         label_entrada.pack(pady=(10, 0))
-        self.texto_entrada = tk.Text(parent, height=20, width=60, wrap='word')
+        self.texto_entrada = tk.Text(parent, height=25, width=70, wrap='word')
         self.texto_entrada.pack(pady=(5, 10))
 
     def create_import_export_buttons(self, parent):
@@ -234,16 +291,16 @@ class TranslationApp:
         label_saida = tk.Label(
             parent,
             text="Texto Simplificado e Traduzido:",
-            font=("Helvetica", 12)
+            font=("Helvetica", 12, "bold")
         )
         label_saida.pack(pady=(10, 0))
-        self.texto_saida = tk.Text(parent, height=20, width=60, wrap='word', state='disabled')
+        self.texto_saida = tk.Text(parent, height=25, width=70, wrap='word', state='disabled')
         self.texto_saida.pack(pady=(5, 10))
 
     def create_readability_metrics_display(self, parent):
         """Cria frames para exibir as métricas de legibilidade."""
         # Frame para as métricas do texto original
-        original_frame = tk.LabelFrame(parent, text="Métricas do Texto Original", font=("Helvetica", 11, "bold"))
+        original_frame = tk.LabelFrame(parent, text="Métricas do Texto Original", font=("Helvetica", 12, "bold"))
         original_frame.pack(fill='both', expand=True, padx=10, pady=10)
 
         # Frame interno para organizar as métricas em tabela
@@ -263,9 +320,9 @@ class TranslationApp:
 
         for i, name in enumerate(metric_names):
             label_name = tk.Label(original_metrics_frame, text=name + ":", anchor='w', font=("Helvetica", 11, "bold"))
-            label_name.grid(row=i, column=0, sticky='w', padx=(0, 5))
+            label_name.grid(row=i, column=0, sticky='w', padx=(0, 5), pady=2)
             label_value = tk.Label(original_metrics_frame, text="", anchor='e', font=("Helvetica", 11))
-            label_value.grid(row=i, column=1, sticky='e')
+            label_value.grid(row=i, column=1, sticky='e', pady=2)
             self.original_metric_labels[name] = label_value
 
         # Adicionar descrições abaixo das métricas do texto original
@@ -277,12 +334,12 @@ class TranslationApp:
             "5 - Índice ARI:\n\tUsa caracteres por palavra e palavras por frase;\n\tValores mais baixos indicam texto mais simples.\n"
             "6 - Pontuação de Dale-Chall:\n\tCompara com uma lista de palavras familiares;\n\tValores mais baixos indicam texto mais fácil."
         )
-        original_desc_label = tk.Label(original_frame, text=original_description, justify='left', wraplength=600,
+        original_desc_label = tk.Label(original_frame, text=original_description, justify='left', wraplength=400,
                                        font=("Courier", 10))
         original_desc_label.pack(padx=10, pady=(10, 0))
 
         # Frame para as métricas do texto simplificado
-        simplified_frame = tk.LabelFrame(parent, text="Métricas do Texto Simplificado", font=("Helvetica", 11, "bold"))
+        simplified_frame = tk.LabelFrame(parent, text="Métricas do Texto Simplificado", font=("Helvetica", 12, "bold"))
         simplified_frame.pack(fill='both', expand=True, padx=10, pady=10)
 
         # Frame interno para organizar as métricas em tabela
@@ -294,18 +351,18 @@ class TranslationApp:
 
         for i, name in enumerate(metric_names):
             label_name = tk.Label(simplified_metrics_frame, text=name + ":", anchor='w', font=("Helvetica", 11, "bold"))
-            label_name.grid(row=i, column=0, sticky='w', padx=(0, 5))
+            label_name.grid(row=i, column=0, sticky='w', padx=(0, 5), pady=2)
             label_value = tk.Label(simplified_metrics_frame, text="", anchor='e', font=("Helvetica", 11))
-            label_value.grid(row=i, column=1, sticky='e')
+            label_value.grid(row=i, column=1, sticky='e', pady=2)
             self.simplified_metric_labels[name] = label_value
 
         # Adiciona o label para o BLEU Score
         row_index = len(metric_names)
         bleu_label_name = tk.Label(simplified_metrics_frame, text='BLEU Score:', anchor='w',
                                    font=("Helvetica", 11, "bold"))
-        bleu_label_name.grid(row=row_index, column=0, sticky='w', padx=(0, 5))
+        bleu_label_name.grid(row=row_index, column=0, sticky='w', padx=(0, 5), pady=2)
         self.bleu_score_label = tk.Label(simplified_metrics_frame, text="", anchor='e', font=("Helvetica", 11))
-        self.bleu_score_label.grid(row=row_index, column=1, sticky='e')
+        self.bleu_score_label.grid(row=row_index, column=1, sticky='e', pady=2)
 
     @staticmethod
     def create_button(parent, text, command, bg_color, **pack_options):
@@ -340,11 +397,31 @@ class TranslationApp:
         estilo = self.estilo_var.get()
         summarize = self.summarize_var.get()
         modelo_selecionado = self.modelo_var.get()
+        complexity_level = self.complexity_var.get()
+
+        focus_aspects = []
+        if self.focus_clarity_var.get():
+            focus_aspects.append('clareza')
+        if self.focus_conciseness_var.get():
+            focus_aspects.append('concisão')
+        if self.focus_formality_var.get():
+            focus_aspects.append('formalidade')
+
+        temperature = self.temperature_var.get()
+        max_tokens = self.max_tokens_var.get()
 
         try:
-            # Simplifica o texto usando a API OpenAI
+            # Simplifica o texto usando a API OpenAI com os novos parâmetros
             texto_simplificado = self.openai_service.simplify_text(
-                texto, area_tecnica, estilo, summarize, modelo_selecionado
+                text=texto,
+                area_tecnica=area_tecnica,
+                estilo=estilo,
+                summarize=summarize,
+                model=modelo_selecionado,
+                complexity_level=complexity_level,
+                focus_aspects=focus_aspects,
+                temperature=temperature,
+                max_tokens=max_tokens
             )
 
             # Calcula as métricas de legibilidade para o texto original
@@ -404,14 +481,14 @@ class TranslationApp:
             self.bleu_score_label.config(text="")
 
     def mostrar_resultado(self, texto: str) -> None:
-        """Displays the result of the translation and simplification."""
+        """Exibe o resultado da tradução e simplificação."""
         self.texto_saida.config(state='normal')
         self.texto_saida.delete("1.0", END)
         self.texto_saida.insert(END, texto)
         self.texto_saida.config(state='disabled')
 
     def import_document(self):
-        """Imports text from a document."""
+        """Importa texto de um documento."""
         file_path = filedialog.askopenfilename(
             title="Selecionar Documento",
             filetypes=[
@@ -431,7 +508,7 @@ class TranslationApp:
                 messagebox.showerror("Erro ao Importar Documento", str(e))
 
     def export_document(self):
-        """Exports the output text to a document."""
+        """Exporta o texto de saída para um documento."""
         output_text = self.texto_saida.get("1.0", END).strip()
         if not output_text:
             messagebox.showwarning("Nenhum texto para exportar", "Não há texto traduzido e simplificado para exportar.")
