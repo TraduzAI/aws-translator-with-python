@@ -12,10 +12,10 @@ Classes:
     AwsTranslateService: Classe responsável pela tradução de textos usando AWS Translate.
 
 Dependências:
-    - boto3: Biblioteca da AWS para interagir com os serviços da AWS.
-    - dotenv: Biblioteca para carregar variáveis de ambiente a partir de um arquivo .env.
-    - os: Biblioteca padrão para interagir com o sistema operacional.
-    - typing: Para anotações de tipo.
+    - boto3: biblioteca da AWS para interagir com os serviços da AWS.
+    - dotenv: biblioteca para carregar variáveis de ambiente a partir de um arquivo .env.
+    - os: biblioteca padrão para interagir com o sistema operacional.
+    - typing: para anotações de tipagem.
 
 Exemplo de Uso:
     >>> from services.aws_translate_service import AwsTranslateService
@@ -79,7 +79,7 @@ class AwsTranslateService:
             3. Verifica se todas as credenciais estão presentes; caso contrário, lança uma exceção.
 
         Exceções:
-            - ValueError: Se alguma das credenciais da AWS estiver faltando no arquivo .env.
+            - ValueError: se alguma das credenciais da AWS estiver faltando no arquivo .env.
         """
         load_dotenv()
         self.ACCESS_KEY = os.getenv('AWS_ACCESS_KEY_ID', '')
@@ -98,7 +98,7 @@ class AwsTranslateService:
         que será utilizado para realizar as traduções de textos.
 
         Exceções:
-            - ConnectionError: Se houver falha ao inicializar o cliente AWS Translate devido a credenciais inválidas
+            - ConnectionError: se houver falha ao inicializar o cliente AWS Translate devido a credenciais inválidas
               ou problemas de rede.
         """
         try:

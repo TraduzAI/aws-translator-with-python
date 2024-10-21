@@ -67,14 +67,10 @@ class OpenAIService:
             - ValueError: se a chave da API OpenAI estiver faltando no arquivo .env.
             - ConnectionError: se houver falha ao inicializar o cliente OpenAI.
         """
-        self.OPENAI_API_KEY = None
+        self.OPENAI_API_KEY = None  # Chave da API OpenAI
         self.client = None  # Instância do cliente OpenAI
-
-        # Carrega as credenciais OpenAI
-        self.load_credentials()
-
-        # Inicializa o cliente OpenAI
-        self.init_openai_client()
+        self.load_credentials()  # Carrega as credenciais OpenAI
+        self.init_openai_client()  # Inicializa o cliente OpenAI
 
     def load_credentials(self) -> None:
         """

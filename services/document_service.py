@@ -21,11 +21,11 @@ Classes:
     DocumentService: Classe responsável pela importação e exportação de documentos.
 
 Dependências:
-    - PyPDF2: Biblioteca para manipulação de arquivos PDF.
-    - python-docx: Biblioteca para manipulação de arquivos DOCX.
-    - EbookLib: Biblioteca para manipulação de arquivos EPUB.
-    - reportlab: Biblioteca para geração de PDFs.
-    - typing: Biblioteca padrão para anotações de tipos.
+    - PyPDF2: biblioteca para manipulação de arquivos PDF.
+    - python-docx: biblioteca para manipulação de arquivos DOCX.
+    - EbookLib: biblioteca para manipulação de arquivos EPUB.
+    - reportlab: biblioteca para geração de PDFs.
+    - typing: biblioteca padrão para anotações de tipos.
 
 Exemplo de Uso:
     >>> from services.document_service import DocumentService
@@ -79,7 +79,7 @@ class DocumentService:
             Optional[str]: O texto extraído do documento ou `None` se não for possível extrair.
 
         Exceções:
-            - ValueError: Se o formato do arquivo não for suportado.
+            - ValueError: se o formato do arquivo não for suportado.
             - Exception: Se ocorrer um erro durante a importação do documento.
 
         Exemplos de Uso:
@@ -117,7 +117,7 @@ class DocumentService:
             None
 
         Exceções:
-            - ValueError: Se o formato de exportação não for suportado.
+            - ValueError: se o formato de exportação não for suportado.
             - Exception: Se ocorrer um erro durante a exportação do documento.
 
         Exemplos de Uso:
@@ -149,7 +149,7 @@ class DocumentService:
             str: O texto extraído do PDF.
 
         Exceções:
-            - FileNotFoundError: Se o arquivo PDF não for encontrado.
+            - FileNotFoundError: se o arquivo PDF não for encontrado.
             - Exception: Se ocorrer um erro durante a leitura do PDF.
         """
         try:
@@ -180,7 +180,7 @@ class DocumentService:
             str: O texto extraído do DOCX.
 
         Exceções:
-            - FileNotFoundError: Se o arquivo DOCX não for encontrado.
+            - FileNotFoundError: se o arquivo DOCX não for encontrado.
             - Exception: Se ocorrer um erro durante a leitura do DOCX.
         """
         try:
@@ -206,7 +206,7 @@ class DocumentService:
             str: O texto extraído do EPUB.
 
         Exceções:
-            - FileNotFoundError: Se o arquivo EPUB não for encontrado.
+            - FileNotFoundError: se o arquivo EPUB não for encontrado.
             - Exception: Se ocorrer um erro durante a leitura do EPUB.
         """
         try:
@@ -236,7 +236,7 @@ class DocumentService:
             str: O texto extraído do TXT.
 
         Exceções:
-            - FileNotFoundError: Se o arquivo TXT não for encontrado.
+            - FileNotFoundError: se o arquivo TXT não for encontrado.
             - Exception: Se ocorrer um erro durante a leitura do TXT.
         """
         try:

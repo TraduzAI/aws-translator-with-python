@@ -18,8 +18,8 @@ Classes:
     ReadabilityService: Classe responsável pelo cálculo das métricas de legibilidade.
 
 Dependências:
-    - textstat: Biblioteca para calcular métricas de legibilidade.
-    - langdetect: Biblioteca para detecção de idioma de textos.
+    - textstat: biblioteca para calcular métricas de legibilidade.
+    - langdetect: biblioteca para detecção de idioma de textos.
 
 Exemplo de Uso:
     >>> from services.readability_service import ReadabilityService
@@ -104,7 +104,7 @@ class ReadabilityService:
             text (str): O texto a ser analisado.
 
         Retorna:
-            dict: Um dicionário contendo as métricas de legibilidade calculadas.
+            dict: um dicionário contendo as métricas de legibilidade calculadas.
 
         Exceções:
             - Nenhuma exceção explícita é lançada. Caso ocorra um erro na detecção do idioma,

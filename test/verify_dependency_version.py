@@ -11,7 +11,7 @@ pacotes = [
     'colorama',
     'distro',
     'docutils',
-    'ebooklib',
+    'EbookLib',
     'h11',
     'httpcore',
     'httpx',
@@ -52,6 +52,7 @@ pacotes = [
     'urllib3'
 ]
 
+# Loop para verificar se cada pacote está instalado e exibir a versão
 for nome_pacote in pacotes:
     try:
         versao = importlib.metadata.version(nome_pacote)
