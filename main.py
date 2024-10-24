@@ -103,86 +103,86 @@ COMPLEXITY_LEVELS = ['Básico', 'Intermediário', 'Avançado']
 
 class TranslationApp:
     """
-    Aplicação para Simplificação e Tradução de Textos com Métricas de Legibilidade.
+        Aplicação para Simplificação e Tradução de Textos com Métricas de Legibilidade.
 
-    Esta classe implementa uma interface gráfica que permite ao usuário inserir um texto,
-    selecionar parâmetros como idioma de destino, área técnica, estilo de escrita, e
-    outros. A aplicação utiliza serviços para simplificar o texto, traduzi-lo, e calcular
-    métricas de legibilidade tanto para o texto original quanto para o texto simplificado.
+        Esta classe implementa uma interface gráfica que permite ao usuário inserir um texto,
+        selecionar parâmetros como idioma de destino, área técnica, estilo de escrita, e
+        outros. A aplicação utiliza serviços para simplificar o texto, traduzi-lo, e calcular
+        métricas de legibilidade tanto para o texto original quanto para o texto simplificado.
 
-    Métodos:
-        __init__(root: Tk) → None:
-            Inicializa a aplicação com a janela raiz fornecida.
+        Métodos:
+            __init__(root: Tk) → None:
+                Inicializa a aplicação com a janela raiz fornecida.
 
-        setup_root_window() → None:
-            Configurações iniciais da janela principal.
+            setup_root_window() → None:
+                Configurações iniciais da janela principal.
 
-        initialize_services() → None:
-            Inicializa os serviços necessários para a aplicação.
+            initialize_services() → None:
+                Inicializa os serviços necessários para a aplicação.
 
-        initialize_variables() → None:
-            Inicializa as variáveis utilizadas na interface.
+            initialize_variables() → None:
+                Inicializa as variáveis utilizadas na interface.
 
-        create_widgets() → None:
-            Cria e organiza os widgets da interface gráfica.
+            create_widgets() → None:
+                Cria e organiza os widgets da interface gráfica.
 
-        create_title() → None:
-            Cria o título da aplicação.
+            create_title() → None:
+                Cria o título da aplicação.
 
-        create_option_menu(parent, label_text, variable, options) → None:
-            Cria um menu de opções dentro do frame fornecido.
+            create_option_menu(parent, label_text, variable, options) → None:
+                Cria um menu de opções dentro do frame fornecido.
 
-        create_option_menus(parent) → None:
-            Cria todos os menus de opções principais.
+            create_option_menus(parent) → None:
+                Cria todos os menus de opções principais.
 
-        create_complexity_option_menu(parent) → None:
-            Cria o menu de seleção de nível de complexidade.
+            create_complexity_option_menu(parent) → None:
+                Cria o menu de seleção de nível de complexidade.
 
-        create_focus_aspects_checkboxes(parent) → None:
-            Cria as caixas de seleção para focar em aspectos específicos.
+            create_focus_aspects_checkboxes(parent) → None:
+                Cria as caixas de seleção para focar em aspectos específicos.
 
-        create_api_parameter_entries(parent) → None:
-            Cria os campos para ajuste dos parâmetros da API OpenAI.
+            create_api_parameter_entries(parent) → None:
+                Cria os campos para ajuste dos parâmetros da API OpenAI.
 
-        create_summarize_checkbox(parent) → None:
-            Cria a caixa de seleção para resumir o texto.
+            create_summarize_checkbox(parent) → None:
+                Cria a caixa de seleção para resumir o texto.
 
-        create_translate_button(parent) → None:
-            Cria o botão para realizar a tradução e simplificação.
+            create_translate_button(parent) → None:
+                Cria o botão para realizar a tradução e simplificação.
 
-        create_text_input(parent) → None:
-            Cria a área de entrada de texto.
+            create_text_input(parent) → None:
+                Cria a área de entrada de texto.
 
-        create_import_export_buttons(parent) → None:
-            Cria os botões para importação e exportação de documentos.
+            create_import_export_buttons(parent) → None:
+                Cria os botões para importação e exportação de documentos.
 
-        create_text_output(parent) → None:
-            Cria a área de saída de texto.
+            create_text_output(parent) → None:
+                Cria a área de saída de texto.
 
-        create_readability_metrics_display(parent) → None:
-            Cria a exibição das métricas de legibilidade.
+            create_readability_metrics_display(parent) → None:
+                Cria a exibição das métricas de legibilidade.
 
-        create_button(parent, text, command, bg_color, **pack_options) → None:
-            Função auxiliar para criar botões.
+            create_button(parent, text, command, bg_color, **pack_options) → None:
+                Função auxiliar para criar botões.
 
-        translate_text() → None:
-            Realiza a simplificação e tradução do texto inserido.
+            translate_text() → None:
+                Realiza a simplificação e tradução do texto inserido.
 
-        metric_key_from_name(name) → str:
-            Mapeia o nome da métrica para a chave no dicionário.
+            metric_key_from_name(name) → str:
+                Mapeia o nome da métrica para a chave no dicionário.
 
-        update_readability_metrics(metrics_original, metrics_simplified, bleu_score=None) → None:
-            Atualiza a exibição das métricas de legibilidade.
+            update_readability_metrics(metrics_original, metrics_simplified, bleu_score=None) → None:
+                Atualiza a exibição das métricas de legibilidade.
 
-        show_results(texto: str) → None:
-            Exibe o resultado da tradução e simplificação.
+            show_results(texto: str) → None:
+                Exibe o resultado da tradução e simplificação.
 
-        import_document() → None:
-            Importa texto de um documento.
+            import_document() → None:
+                Importa texto de um documento.
 
-        export_document() → None:
-            Exporta o texto de saída para um documento.
-    """
+            export_document() → None:
+                Exporta o texto de saída para um documento.
+        """
 
     def __init__(self, root: Tk) -> None:
         """
@@ -213,8 +213,10 @@ class TranslationApp:
         self.document_service = None
         self.openai_service = None
         self.aws_translate_service = None
-        self.bleu_score_service = None  # Adicionado
+        self.bleu_score_service = None
         self.root = root
+        self.metrics_original = None  # Adicionado
+        self.metrics_simplified = None  # Adicionado
         self.setup_root_window()
         self.initialize_services()
         self.initialize_variables()
@@ -646,6 +648,10 @@ class TranslationApp:
             # Calcula as métricas de legibilidade para o texto simplificado
             metrics_simplified = self.readability_service.calculate_readability(texto_simplificado)
 
+            # Armazena as métricas para exportação
+            self.metrics_original = metrics_original  # Adicionado
+            self.metrics_simplified = metrics_simplified  # Adicionado
+
             # Traduz o texto simplificado
             texto_traduzido, source_language_code = self.aws_translate_service.translate_text(
                 texto_simplificado, codigo_idioma_destino
@@ -756,7 +762,7 @@ class TranslationApp:
         Exporta o texto de saída para um documento escolhido pelo usuário.
 
         Permite ao usuário salvar o texto traduzido e simplificado em formatos
-        como TXT, PDF ou DOCX.
+        como TXT, PDF ou DOCX, incluindo as métricas de legibilidade.
 
         Exceções:
             - Exibe uma mensagem de erro se não houver texto para exportar ou
@@ -765,6 +771,10 @@ class TranslationApp:
         output_text = self.texto_saida.get("1.0", END).strip()
         if not output_text:
             messagebox.showwarning("Nenhum texto para exportar", "Não há texto traduzido e simplificado para exportar.")
+            return
+
+        if self.metrics_original is None or self.metrics_simplified is None:
+            messagebox.showwarning("Métricas Indisponíveis", "As métricas não estão disponíveis para exportação.")
             return
 
         file_path = filedialog.asksaveasfilename(
@@ -785,7 +795,13 @@ class TranslationApp:
                     messagebox.showerror("Formato não suportado", f"Formato de arquivo não suportado: {ext}")
                     return
                 text = self.texto_saida.get("1.0", END)
-                self.document_service.export_document(text, file_path, format)
+                self.document_service.export_document(
+                    text,
+                    file_path,
+                    format,
+                    self.metrics_original,
+                    self.metrics_simplified
+                )
                 messagebox.showinfo("Exportação bem-sucedida", f"Documento exportado com sucesso: {file_path}")
             except Exception as e:
                 messagebox.showerror("Erro ao Exportar Documento", str(e))

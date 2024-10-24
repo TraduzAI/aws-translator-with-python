@@ -101,17 +101,20 @@ class DocumentService:
         else:
             raise ValueError(f"Formato de arquivo não suportado: {ext}")
 
-    def export_document(self, text: str, file_path: str, format: str) -> None:
+    def export_document(self, text: str, file_path: str, format: str, metrics_original: dict = None,
+                        metrics_simplified: dict = None) -> None:
         """
-        Exporta texto para um arquivo de documento.
+        Exporta texto e métricas para um arquivo de documento.
 
         Este metodo determina o formato de exportação com base no parâmetro `format`
-        e utiliza o metodo apropriado para salvar o texto no formato desejado.
+        e utiliza o metodo apropriado para salvar o texto e métricas no formato desejado.
 
         Parâmetros:
             text (str): O texto a ser exportado.
             file_path (str): Caminho onde o arquivo exportado será salvo.
             format (str): Formato de exportação desejado (`'pdf'`, `'docx'`, `'txt'`).
+            metrics_original (dict): Métricas do texto original.
+            metrics_simplified (dict): Métricas do texto simplificado.
 
         Retorna:
             None
@@ -119,19 +122,14 @@ class DocumentService:
         Exceções:
             - ValueError: se o formato de exportação não for suportado.
             - Exception: Se ocorrer um erro durante a exportação do documento.
-
-        Exemplos de Uso:
-            >>> doc_service = DocumentService()
-            >>> texto = "Este é o texto que será exportado."
-            >>> doc_service.export_document(texto, 'saida.docx', 'docx')
         """
         format = format.lower()
         if format == 'pdf':
-            self._export_pdf(text, file_path)
+            self._export_pdf(text, file_path, metrics_original, metrics_simplified)
         elif format == 'docx':
-            self._export_docx(text, file_path)
+            self._export_docx(text, file_path, metrics_original, metrics_simplified)
         elif format == 'txt':
-            self._export_txt(text, file_path)
+            self._export_txt(text, file_path, metrics_original, metrics_simplified)
         else:
             raise ValueError(f"Formato de exportação não suportado: {format}")
 
@@ -248,16 +246,18 @@ class DocumentService:
             raise Exception(f"Erro ao importar TXT: {str(e)}")
 
     @staticmethod
-    def _export_pdf(text: str, file_path: str) -> None:
+    def _export_pdf(text: str, file_path: str, metrics_original: dict = None, metrics_simplified: dict = None) -> None:
         """
-        Exporta texto para um arquivo PDF.
+        Exporta texto e métricas para um arquivo PDF.
 
         Utiliza a biblioteca ReportLab para gerar um PDF a partir do texto fornecido,
-        cuidando da formatação e quebra de linhas conforme necessário.
+        cuidando da formatação e quebra de linhas conforme necessário, e inclui as métricas.
 
         Parâmetros:
             text (str): O texto a ser exportado para o PDF.
             file_path (str): Caminho onde o arquivo PDF será salvo.
+            metrics_original (dict): Métricas do texto original.
+            metrics_simplified (dict): Métricas do texto simplificado.
 
         Retorna:
             None
@@ -271,56 +271,101 @@ class DocumentService:
 
             # Configurações do texto
             text_object = c.beginText(50, height - 50)
+            text_object.setFont("Helvetica-Bold", 14)
+            text_object.textLine("Texto Simplificado e Traduzido:")
             text_object.setFont("Helvetica", 12)
-            line_height = 14  # Espaço entre linhas
+            text_object.textLine("")
 
-            # Tratando cada linha para evitar estouro de página
+            # Adicionar o texto
             for line in text.split('\n'):
                 words = line.split(' ')
                 line_buffer = ""
 
                 for word in words:
-                    # Testa se a linha com a nova palavra excede a largura da página
                     if c.stringWidth(line_buffer + word, "Helvetica", 12) < (width - 100):
                         line_buffer += word + " "
                     else:
                         text_object.textLine(line_buffer.strip())
                         line_buffer = word + " "
 
-                        # Verifica se a altura atual do texto está muito baixa
                         if text_object.getY() <= 50:
                             c.drawText(text_object)
                             c.showPage()
                             text_object = c.beginText(50, height - 50)
                             text_object.setFont("Helvetica", 12)
 
-                # Adiciona a linha final ao objeto de texto
                 if line_buffer:
                     text_object.textLine(line_buffer.strip())
 
-                    # Verifica novamente se precisa mudar de página
                     if text_object.getY() <= 50:
                         c.drawText(text_object)
                         c.showPage()
                         text_object = c.beginText(50, height - 50)
                         text_object.setFont("Helvetica", 12)
 
-            # Desenha o texto restante e salva o PDF
+            text_object.textLine("")
+
+            if metrics_original and metrics_simplified:
+                metric_names = {
+                    'flesch_reading_ease': 'Índice de Flesch Reading Ease',
+                    'flesch_kincaid_grade': 'Grau de Flesch-Kincaid',
+                    'smog_index': 'Índice SMOG',
+                    'coleman_liau_index': 'Índice de Coleman-Liau',
+                    'automated_readability_index': 'Índice ARI',
+                    'dale_chall_readability_score': 'Pontuação de Dale-Chall'
+                }
+
+                # Métricas do texto original
+                text_object.setFont("Helvetica-Bold", 14)
+                text_object.textLine("Métricas do Texto Original:")
+                text_object.setFont("Helvetica", 12)
+                text_object.textLine("")
+
+                for key, value in metrics_original.items():
+                    metric_name = metric_names.get(key, key)
+                    text_object.textLine(f"{metric_name}: {value:.2f}")
+
+                    if text_object.getY() <= 50:
+                        c.drawText(text_object)
+                        c.showPage()
+                        text_object = c.beginText(50, height - 50)
+                        text_object.setFont("Helvetica", 12)
+
+                text_object.textLine("")
+
+                # Métricas do texto simplificado
+                text_object.setFont("Helvetica-Bold", 14)
+                text_object.textLine("Métricas do Texto Simplificado:")
+                text_object.setFont("Helvetica", 12)
+                text_object.textLine("")
+
+                for key, value in metrics_simplified.items():
+                    metric_name = metric_names.get(key, key)
+                    text_object.textLine(f"{metric_name}: {value:.2f}")
+
+                    if text_object.getY() <= 50:
+                        c.drawText(text_object)
+                        c.showPage()
+                        text_object = c.beginText(50, height - 50)
+                        text_object.setFont("Helvetica", 12)
+
             c.drawText(text_object)
             c.save()
         except Exception as e:
             raise Exception(f"Erro ao exportar PDF: {str(e)}")
 
     @staticmethod
-    def _export_docx(text: str, file_path: str) -> None:
+    def _export_docx(text: str, file_path: str, metrics_original: dict = None, metrics_simplified: dict = None) -> None:
         """
-        Exporta texto para um arquivo DOCX.
+        Exporta texto e métricas para um arquivo DOCX.
 
-        Utiliza a biblioteca python-docx para criar um documento DOCX com o texto fornecido.
+        Utiliza a biblioteca python-docx para criar um documento DOCX com o texto e as métricas fornecidos.
 
         Parâmetros:
             text (str): O texto a ser exportado para o DOCX.
             file_path (str): Caminho onde o arquivo DOCX será salvo.
+            metrics_original (dict): Métricas do texto original.
+            metrics_simplified (dict): Métricas do texto simplificado.
 
         Retorna:
             None
@@ -330,21 +375,49 @@ class DocumentService:
         """
         try:
             doc = Document()
+
+            # Adicionar título
+            doc.add_heading('Texto Simplificado e Traduzido:', level=1)
             doc.add_paragraph(text)
+
+            if metrics_original and metrics_simplified:
+                metric_names = {
+                    'flesch_reading_ease': 'Índice de Flesch Reading Ease',
+                    'flesch_kincaid_grade': 'Grau de Flesch-Kincaid',
+                    'smog_index': 'Índice SMOG',
+                    'coleman_liau_index': 'Índice de Coleman-Liau',
+                    'automated_readability_index': 'Índice ARI',
+                    'dale_chall_readability_score': 'Pontuação de Dale-Chall'
+                }
+
+                # Métricas do texto original
+                doc.add_heading('Métricas do Texto Original:', level=2)
+                for key, value in metrics_original.items():
+                    metric_name = metric_names.get(key, key)
+                    doc.add_paragraph(f"{metric_name}: {value:.2f}")
+
+                # Métricas do texto simplificado
+                doc.add_heading('Métricas do Texto Simplificado:', level=2)
+                for key, value in metrics_simplified.items():
+                    metric_name = metric_names.get(key, key)
+                    doc.add_paragraph(f"{metric_name}: {value:.2f}")
+
             doc.save(file_path)
         except Exception as e:
             raise Exception(f"Erro ao exportar DOCX: {str(e)}")
 
     @staticmethod
-    def _export_txt(text: str, file_path: str) -> None:
+    def _export_txt(text: str, file_path: str, metrics_original: dict = None, metrics_simplified: dict = None) -> None:
         """
-        Exporta texto para um arquivo TXT.
+        Exporta texto e métricas para um arquivo TXT.
 
-        Abre (ou cria) o arquivo de texto e escreve todos os conteúdos fornecidos.
+        Abre (ou cria) o arquivo de texto e escreve todos os conteúdos fornecidos, incluindo as métricas.
 
         Parâmetros:
             text (str): O texto a ser exportado para o TXT.
             file_path (str): Caminho onde o arquivo TXT será salvo.
+            metrics_original (dict): Métricas do texto original.
+            metrics_simplified (dict): Métricas do texto simplificado.
 
         Retorna:
             None
@@ -354,6 +427,28 @@ class DocumentService:
         """
         try:
             with open(file_path, 'w', encoding='utf-8') as f:
+                f.write("Texto Simplificado e Traduzido:\n")
                 f.write(text)
+                f.write("\n\n")
+
+                if metrics_original and metrics_simplified:
+                    metric_names = {
+                        'flesch_reading_ease': 'Índice de Flesch Reading Ease',
+                        'flesch_kincaid_grade': 'Grau de Flesch-Kincaid',
+                        'smog_index': 'Índice SMOG',
+                        'coleman_liau_index': 'Índice de Coleman-Liau',
+                        'automated_readability_index': 'Índice ARI',
+                        'dale_chall_readability_score': 'Pontuação de Dale-Chall'
+                    }
+
+                    f.write("Métricas do Texto Original:\n")
+                    for key, value in metrics_original.items():
+                        metric_name = metric_names.get(key, key)
+                        f.write(f"{metric_name}: {value:.2f}\n")
+
+                    f.write("\nMétricas do Texto Simplificado:\n")
+                    for key, value in metrics_simplified.items():
+                        metric_name = metric_names.get(key, key)
+                        f.write(f"{metric_name}: {value:.2f}\n")
         except Exception as e:
             raise Exception(f"Erro ao exportar TXT: {str(e)}")
