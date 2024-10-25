@@ -291,26 +291,14 @@ class TranslationApp:
             self.update_interface_language()
 
     def update_interface_language(self):
-        """
-        Atualiza todos os rótulos da interface para o idioma selecionado.
-
-        Traduz todos os rótulos, botões e outros elementos de texto na interface
-        usando o serviço de tradução e atualiza seu texto exibido.
-        """
         try:
             # Obter todos os textos de rótulos para traduzir
             texts_to_translate = list(self.label_texts.keys())
             # Verificar se as traduções já estão em cache
             translations = {}
             for text in texts_to_translate:
-                if (text, self.current_language_code) in self.translated_texts:
-                    translations[text] = self.translated_texts[(text, self.current_language_code)]
-                else:
-                    # Traduzir o texto
-                    translated_text, _ = self.aws_translate_service.translate_text(
-                        text, self.current_language_code)
-                    translations[text] = translated_text
-                    self.translated_texts[(text, self.current_language_code)] = translated_text
+                translations[text] = self.cached_translate_text(
+                    text, self.current_language_code)
             # Atualizar rótulos com o texto traduzido
             for text, widget in self.label_texts.items():
                 widget.config(text=translations[text])
@@ -412,16 +400,34 @@ class TranslationApp:
         """
         translated_options = {}
         for original_text in options_dict.keys():
-            # Verifica se a tradução já está em cache
-            if (original_text, self.current_language_code) in self.translated_texts:
-                translated_text = self.translated_texts[(original_text, self.current_language_code)]
-            else:
-                # Realiza a tradução
-                translated_text, _ = self.aws_translate_service.translate_text(
-                    original_text, self.current_language_code)
-                self.translated_texts[(original_text, self.current_language_code)] = translated_text
+            translated_text = self.cached_translate_text(
+                original_text, self.current_language_code)
             translated_options[original_text] = translated_text
         return translated_options
+
+    def cached_translate_text(self, text, target_language_code):
+        """
+        Traduz o texto fornecido para o idioma de destino, utilizando cache.
+
+        Args:
+            text (str): Texto a ser traduzido.
+            target_language_code (str): Código do idioma de destino.
+
+        Returns:
+            str: Texto traduzido.
+        """
+        if target_language_code not in self.translated_texts:
+            self.translated_texts[target_language_code] = {}
+
+        language_cache = self.translated_texts[target_language_code]
+
+        if text in language_cache:
+            return language_cache[text]
+        else:
+            translated_text, _ = self.aws_translate_service.translate_text(
+                text, target_language_code)
+            language_cache[text] = translated_text
+            return translated_text
 
     @staticmethod
     def update_option_menu(option_menu, variable, translated_options):
