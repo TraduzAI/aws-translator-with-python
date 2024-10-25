@@ -1,33 +1,3 @@
-# main.py
-
-"""
-Aplicação de Tradução e Simplificação de Texto com Métricas de Legibilidade
-===========================================================================
-Este módulo fornece uma aplicação gráfica para simplificar e traduzir textos,
-calculando métricas de legibilidade tanto para o texto original quanto para o
-texto simplificado. A interface permite a configuração de diversos parâmetros
-como idioma de destino, área técnica, estilo de escrita, modelo OpenAI, entre
-outros.
-
-Classes:
-    TranslationApp: Classe responsável pela interface gráfica e pela lógica
-                    de tradução e simplificação de textos.
-
-Dependências:
-    - tkinter: biblioteca para criação de interfaces gráficas.
-    - services.api.aws_translate_service.AwsTranslateService: serviço para tradução usando AWS.
-    - services.api.openai_service.OpenAIService: serviço para simplificação de texto usando OpenAI.
-    - services.document_service.DocumentService: serviço para importação e exportação de documentos.
-    - services.language.readability_service.ReadabilityService: serviço para cálculo de métricas de legibilidade.
-    - services.language.bleu_score_service.BleuScoreService: serviço para cálculo de BLEU Score.
-
-Exemplo de Uso:
-    >>> if __name__ == "__main__":
-    >>>     root = tk.Tk()
-    >>>     app = TranslationApp(root)
-    >>>     root.mainloop()
-"""
-
 import os
 import tkinter as tk
 from tkinter import END, Tk, messagebox, filedialog
@@ -39,57 +9,63 @@ from services.language.bleu_score_service import BleuScoreService
 
 # Constantes
 LANGUAGES = {
-    'Africâner': 'af',
-    'Árabe': 'ar',
-    'Bengali': 'bn',
-    'Chinês (Simplificado)': 'zh',
-    'Chinês (Tradicional)': 'zh-TW',
-    'Dinamarquês': 'da',
-    'Holandês': 'nl',
-    'Inglês': 'en',
-    'Francês': 'fr',
-    'Alemão': 'de',
-    'Grego': 'el',
-    'Hebraico': 'he',
-    'Hindi': 'hi',
-    'Indonésio': 'id',
+    'Afrikaans': 'af',
+    'العربية': 'ar',
+    'বাংলা': 'bn',
+    '中文 (简体)': 'zh',
+    '中文 (繁體)': 'zh-TW',
+    'Dansk': 'da',
+    'Nederlands': 'nl',
+    'English': 'en',
+    'Français': 'fr',
+    'Deutsch': 'de',
+    'Ελληνικά': 'el',
+    'עברית': 'he',
+    'हिन्दी': 'hi',
+    'Bahasa Indonesia': 'id',
     'Italiano': 'it',
-    'Japonês': 'ja',
-    'Coreano': 'ko',
-    'Norueguês': 'no',
-    'Polonês': 'pl',
+    '日本語': 'ja',
+    '한국어': 'ko',
+    'Norsk': 'no',
+    'Polski': 'pl',
     'Português': 'pt',
-    'Russo': 'ru',
-    'Espanhol': 'es',
-    'Sueco': 'sv',
-    'Turco': 'tr',
-    'Ucraniano': 'uk',
-    'Vietnamita': 'vi'
+    'Русский': 'ru',
+    'Español': 'es',
+    'Svenska': 'sv',
+    'Türkçe': 'tr',
+    'Українська': 'uk',
+    'Tiếng Việt': 'vi'
 }
 
-SPECIALITIES = [
-    'Saúde, Medicina e Psicologia',
-    'Matemática',
-    'Física',
-    'Estatística',
-    'Ciência da Computação',
-    'Ciência de Dados e Aprendizado de Máquina',
-    'Ciências Biológicas',
-    'Ciências Sociais',
-    'Direito',
-    'Engenharia',
-    'Administração e Economia',
-    'Artes e Humanidades',
-    'Comércio e Logística'
-]
+SPECIALITIES = {
+    'Saúde, Medicina e Psicologia': 'Saúde, Medicina e Psicologia',
+    'Matemática': 'Matemática',
+    'Física': 'Física',
+    'Estatística': 'Estatística',
+    'Ciência da Computação': 'Ciência da Computação',
+    'Ciência de Dados e Aprendizado de Máquina': 'Ciência de Dados e Aprendizado de Máquina',
+    'Ciências Biológicas': 'Ciências Biológicas',
+    'Ciências Sociais': 'Ciências Sociais',
+    'Direito': 'Direito',
+    'Engenharia': 'Engenharia',
+    'Administração e Economia': 'Administração e Economia',
+    'Artes e Humanidades': 'Artes e Humanidades',
+    'Comércio e Logística': 'Comércio e Logística'
+}
 
-STYLES = [
-    'Formal',
-    'Informal',
-    'Técnico',
-    'Conversacional',
-    'Persuasivo'
-]
+STYLES = {
+    'Formal': 'Formal',
+    'Informal': 'Informal',
+    'Técnico': 'Técnico',
+    'Conversacional': 'Conversacional',
+    'Persuasivo': 'Persuasivo'
+}
+
+COMPLEXITY_LEVELS = {
+    'Básico': 'Básico',
+    'Intermediário': 'Intermediário',
+    'Avançado': 'Avançado'
+}
 
 AVAILABLE_MODELS = [
     'gpt-3.5-turbo-0125',
@@ -98,91 +74,95 @@ AVAILABLE_MODELS = [
     'gpt-4o'
 ]
 
-COMPLEXITY_LEVELS = ['Básico', 'Intermediário', 'Avançado']
-
 
 class TranslationApp:
     """
-        Aplicação para Simplificação e Tradução de Textos com Métricas de Legibilidade.
+    Aplicação para Simplificação e Tradução de Textos com Métricas de Legibilidade.
 
-        Esta classe implementa uma interface gráfica que permite ao usuário inserir um texto,
-        selecionar parâmetros como idioma de destino, área técnica, estilo de escrita, e
-        outros. A aplicação utiliza serviços para simplificar o texto, traduzi-lo, e calcular
-        métricas de legibilidade tanto para o texto original quanto para o texto simplificado.
+    Esta classe implementa uma interface gráfica que permite ao usuário inserir um texto,
+    selecionar parâmetros como idioma de destino, área técnica, estilo de escrita, e
+    outros. A aplicação utiliza serviços para simplificar o texto, traduzi-lo, e calcular
+    métricas de legibilidade tanto para o texto original quanto para o texto simplificado.
 
-        Métodos:
-            __init__(root: Tk) → None:
-                Inicializa a aplicação com a janela raiz fornecida.
+    Métodos:
+        __init__(root: Tk) → None:
+            Inicializa a aplicação com a janela raiz fornecida.
 
-            setup_root_window() → None:
-                Configurações iniciais da janela principal.
+        setup_root_window() → None:
+            Configurações iniciais da janela principal.
 
-            initialize_services() → None:
-                Inicializa os serviços necessários para a aplicação.
+        initialize_services() → None:
+            Inicializa os serviços necessários para a aplicação.
 
-            initialize_variables() → None:
-                Inicializa as variáveis utilizadas na interface.
+        initialize_variables() → None:
+            Inicializa as variáveis utilizadas na interface.
 
-            create_widgets() → None:
-                Cria e organiza os widgets da interface gráfica.
+        create_widgets() → None:
+            Cria e organiza os widgets da interface gráfica.
 
-            create_title() → None:
-                Cria o título da aplicação.
+        create_title() → None:
+            Cria o título da aplicação.
 
-            create_option_menu(parent, label_text, variable, options) → None:
-                Cria um menu de opções dentro do frame fornecido.
+        create_option_menu(parent, label_text, variable, options) → None:
+            Cria um menu de opções dentro do frame fornecido.
 
-            create_option_menus(parent) → None:
-                Cria todos os menus de opções principais.
+        create_option_menus(parent) → None:
+            Cria todos os menus de opções principais.
 
-            create_complexity_option_menu(parent) → None:
-                Cria o menu de seleção de nível de complexidade.
+        create_complexity_option_menu(parent) → None:
+            Cria o menu de seleção de nível de complexidade.
 
-            create_focus_aspects_checkboxes(parent) → None:
-                Cria as caixas de seleção para focar em aspectos específicos.
+        create_focus_aspects_checkboxes(parent) → None:
+            Cria as caixas de seleção para focar em aspectos específicos.
 
-            create_api_parameter_entries(parent) → None:
-                Cria os campos para ajuste dos parâmetros da API OpenAI.
+        create_api_parameter_entries(parent) → None:
+            Cria os campos para ajuste dos parâmetros da API OpenAI.
 
-            create_summarize_checkbox(parent) → None:
-                Cria a caixa de seleção para resumir o texto.
+        create_summarize_checkbox(parent) → None:
+            Cria a caixa de seleção para resumir o texto.
 
-            create_translate_button(parent) → None:
-                Cria o botão para realizar a tradução e simplificação.
+        create_translate_button(parent) → None:
+            Cria o botão para realizar a tradução e simplificação.
 
-            create_text_input(parent) → None:
-                Cria a área de entrada de texto.
+        create_text_input(parent) → None:
+            Cria a área de entrada de texto.
 
-            create_import_export_buttons(parent) → None:
-                Cria os botões para importação e exportação de documentos.
+        create_import_export_buttons(parent) → None:
+            Cria os botões para importação e exportação de documentos.
 
-            create_text_output(parent) → None:
-                Cria a área de saída de texto.
+        create_text_output(parent) → None:
+            Cria a área de saída de texto.
 
-            create_readability_metrics_display(parent) → None:
-                Cria a exibição das métricas de legibilidade.
+        create_readability_metrics_display(parent) → None:
+            Cria a exibição das métricas de legibilidade.
 
-            create_button(parent, text, command, bg_color, **pack_options) → None:
-                Função auxiliar para criar botões.
+        create_button(parent, text, command, bg_color, **pack_options) → None:
+            Função auxiliar para criar botões.
 
-            translate_text() → None:
-                Realiza a simplificação e tradução do texto inserido.
+        translate_text() → None:
+            Realiza a simplificação e tradução do texto inserido.
 
-            metric_key_from_name(name) → str:
-                Mapeia o nome da métrica para a chave no dicionário.
+        metric_key_from_name(name) → str:
+            Mapeia o nome da métrica para a chave no dicionário.
 
-            update_readability_metrics(metrics_original, metrics_simplified, bleu_score=None) → None:
-                Atualiza a exibição das métricas de legibilidade.
+        update_readability_metrics(metrics_original, metrics_simplified, bleu_score=None) → None:
+            Atualiza a exibição das métricas de legibilidade.
 
-            show_results(texto: str) → None:
-                Exibe o resultado da tradução e simplificação.
+        show_results(texto: str) → None:
+            Exibe o resultado da tradução e simplificação.
 
-            import_document() → None:
-                Importa texto de um documento.
+        import_document() → None:
+            Importa texto de um documento.
 
-            export_document() → None:
-                Exporta o texto de saída para um documento.
-        """
+        export_document() → None:
+            Exporta o texto de saída para um documento.
+
+        on_language_change(*args) → None:
+            Callback function when the target language changes.
+
+        update_interface_language() → None:
+            Updates all interface labels to the selected language.
+    """
 
     def __init__(self, root: Tk) -> None:
         """
@@ -191,35 +171,56 @@ class TranslationApp:
         Args:
             root (Tk): A janela raiz da aplicação Tkinter.
         """
-        self.bleu_score_label = None
-        self.original_metric_labels = None
-        self.simplified_metric_labels = None
-        self.simplified_metrics_text = None
-        self.original_metrics_text = None
-        self.texto_saida = None
-        self.texto_entrada = None
-        self.modelo_var = None
-        self.summarize_var = None
-        self.destino_var = None
-        self.area_var = None
-        self.estilo_var = None
-        self.complexity_var = None
-        self.focus_clarity_var = None
-        self.focus_conciseness_var = None
-        self.focus_formality_var = None
-        self.temperature_var = None
-        self.max_tokens_var = None
-        self.readability_service = None
-        self.document_service = None
-        self.openai_service = None
-        self.aws_translate_service = None
-        self.bleu_score_service = None
+        # Atribuir a janela raiz
         self.root = root
-        self.metrics_original = None  # Adicionado
-        self.metrics_simplified = None  # Adicionado
+
+        # Inicializar variáveis de interface
+        self.title_label = self.subtitle_label = None
+        self.texto_entrada = self.texto_saida = None
+        self.area_option_menu = self.estilo_option_menu = self.complexity_option_menu = None
+        self.bleu_score_label = None
+        self.simplified_metric_labels = self.original_metric_labels = None
+
+        # Inicializar variáveis e serviços
+        self.aws_translate_service = self.openai_service = None
+        self.document_service = self.readability_service = self.bleu_score_service = None
+
+        # Inicializar variáveis de controle e configuração
+        self.modelo_option_menu = None
+        self.metrics_original = self.metrics_simplified = None
+        self.destino_var = tk.StringVar(value='Português')
+        self.area_var = tk.StringVar(value='Ciência da Computação')
+        self.estilo_var = tk.StringVar(value='Informal')
+        self.complexity_var = tk.StringVar(value='Intermediário')
+        self.summarize_var = tk.BooleanVar()
+        self.modelo_var = tk.StringVar(value='gpt-3.5-turbo-0125')
+        self.max_tokens_var = tk.IntVar(value=1500)
+        self.temperature_var = tk.DoubleVar(value=0.8)
+        self.focus_clarity_var = self.focus_conciseness_var = self.focus_formality_var = tk.BooleanVar()
+
+        # Inicializar caches e mapeamento de idiomas
+        self.label_texts = {}
+        self.translated_texts = {}
+        self.language_codes = {name: code for name, code in LANGUAGES.items()}
+        self.current_language_code = 'pt'  # Valor padrão
+
+        # Dados originais e suas traduções
+        self.original_specialities = SPECIALITIES
+        self.original_styles = STYLES
+        self.original_complexity_levels = COMPLEXITY_LEVELS
+        self.translated_specialities = {}
+        self.translated_styles = {}
+        self.translated_complexity_levels = {}
+
+        # Configuração da interface e inicialização dos serviços
         self.setup_root_window()
         self.initialize_services()
         self.initialize_variables()
+
+        # Atualizar o idioma selecionado
+        self.current_language_code = self.language_codes.get(self.destino_var.get(), 'pt')
+
+        # Criar widgets da interface
         self.create_widgets()
 
     def setup_root_window(self):
@@ -228,9 +229,8 @@ class TranslationApp:
 
         Define o tamanho, título e subtítulo da janela.
         """
-        self.root.geometry("1200x900")  # Ajustado para acomodar novas opções
+        self.root.geometry("1200x900")
         self.root.title("TraduzAI")
-        self.root.subtitle = "Uma Solução Personalizada para Tradução Eficaz e Fluente em Diferentes Contextos"
 
     def initialize_services(self):
         """
@@ -247,8 +247,8 @@ class TranslationApp:
             self.aws_translate_service = AwsTranslateService()
             self.openai_service = OpenAIService()
             self.document_service = DocumentService()
-            self.readability_service = ReadabilityService()  # Initialize ReadabilityService
-            self.bleu_score_service = BleuScoreService()  # Initialize BleuScoreService
+            self.readability_service = ReadabilityService()
+            self.bleu_score_service = BleuScoreService()
         except Exception as e:
             messagebox.showerror("Erro ao Inicializar", str(e))
             self.root.destroy()
@@ -271,7 +271,53 @@ class TranslationApp:
         self.focus_conciseness_var = tk.BooleanVar()
         self.focus_formality_var = tk.BooleanVar()
         self.temperature_var = tk.DoubleVar(self.root, value=0.8)
-        self.max_tokens_var = tk.IntVar(self.root, value=1500)  # Ajustado para evitar exceder limites
+        self.max_tokens_var = tk.IntVar(self.root, value=1500)
+        self.metrics_original = None
+        self.metrics_simplified = None
+
+        # Set up a trace to detect changes in the target language
+        self.destino_var.trace('w', self.on_language_change)
+
+    def on_language_change(self, *args):
+        """
+        Callback function when the target language changes.
+
+        Updates the interface language to match the selected target language.
+        """
+        selected_language = self.destino_var.get()
+        new_language_code = self.language_codes.get(selected_language, 'pt')
+        if new_language_code != self.current_language_code:
+            self.current_language_code = new_language_code
+            self.update_interface_language()
+
+    def update_interface_language(self):
+        """
+        Atualiza todos os rótulos da interface para o idioma selecionado.
+
+        Traduz todos os rótulos, botões e outros elementos de texto na interface
+        usando o serviço de tradução e atualiza seu texto exibido.
+        """
+        try:
+            # Obter todos os textos de rótulos para traduzir
+            texts_to_translate = list(self.label_texts.keys())
+            # Verificar se as traduções já estão em cache
+            translations = {}
+            for text in texts_to_translate:
+                if (text, self.current_language_code) in self.translated_texts:
+                    translations[text] = self.translated_texts[(text, self.current_language_code)]
+                else:
+                    # Traduzir o texto
+                    translated_text, _ = self.aws_translate_service.translate_text(
+                        text, self.current_language_code)
+                    translations[text] = translated_text
+                    self.translated_texts[(text, self.current_language_code)] = translated_text
+            # Atualizar rótulos com o texto traduzido
+            for text, widget in self.label_texts.items():
+                widget.config(text=translations[text])
+            # Atualizar os OptionMenus
+            self.translate_option_menus()
+        except Exception as e:
+            messagebox.showerror("Erro ao Traduzir Interface", str(e))
 
     def create_widgets(self) -> None:
         """
@@ -320,22 +366,120 @@ class TranslationApp:
         # Criar widgets no right_frame
         self.create_readability_metrics_display(right_frame)
 
+    def translate_option_menus(self):
+        """
+        Traduz as opções dos menus de seleção e atualiza os OptionMenus correspondentes.
+        """
+        # Tradução das especialidades
+        self.translated_specialities = self.translate_options(self.original_specialities)
+
+        # Atualização do OptionMenu de especialidades
+        self.update_option_menu(
+            self.area_option_menu,
+            self.area_var,
+            self.translated_specialities
+        )
+
+        # Tradução dos estilos
+        self.translated_styles = self.translate_options(self.original_styles)
+
+        # Atualização do OptionMenu de estilos
+        self.update_option_menu(
+            self.estilo_option_menu,
+            self.estilo_var,
+            self.translated_styles
+        )
+
+        # Tradução dos níveis de complexidade
+        self.translated_complexity_levels = self.translate_options(self.original_complexity_levels)
+
+        # Atualização do OptionMenu de níveis de complexidade
+        self.update_option_menu(
+            self.complexity_option_menu,
+            self.complexity_var,
+            self.translated_complexity_levels
+        )
+
+    def translate_options(self, options_dict):
+        """
+        Traduz as opções fornecidas e retorna um dicionário de traduções.
+
+        Args:
+            options_dict (dict): Dicionário de opções originais.
+
+        Returns:
+            dict: Dicionário com as opções originais e suas traduções.
+        """
+        translated_options = {}
+        for original_text in options_dict.keys():
+            # Verifica se a tradução já está em cache
+            if (original_text, self.current_language_code) in self.translated_texts:
+                translated_text = self.translated_texts[(original_text, self.current_language_code)]
+            else:
+                # Realiza a tradução
+                translated_text, _ = self.aws_translate_service.translate_text(
+                    original_text, self.current_language_code)
+                self.translated_texts[(original_text, self.current_language_code)] = translated_text
+            translated_options[original_text] = translated_text
+        return translated_options
+
+    @staticmethod
+    def update_option_menu(option_menu, variable, translated_options):
+        """
+        Atualiza um OptionMenu com as opções traduzidas.
+
+        Args:
+            option_menu (tk.OptionMenu): O widget OptionMenu a ser atualizado.
+            variable (tk.StringVar): A variável associada ao OptionMenu.
+            translated_options (dict): Dicionário com as opções originais e traduzidas.
+        """
+        menu = option_menu['menu']
+        menu.delete(0, 'end')
+
+        # Mapeamento inverso das traduções para as opções originais
+        inverse_translations = {v: k for k, v in translated_options.items()}
+
+        # Obter o valor atual selecionado e mapeá-lo para a tradução
+        current_value = variable.get()
+        original_value = inverse_translations.get(current_value, current_value)
+
+        # Atualizar as opções no menu
+        for original_option, translated_option in translated_options.items():
+            menu.add_command(
+                label=translated_option,
+                command=lambda value=translated_option: variable.set(value)
+            )
+
+        # Atualizar a variável com o valor traduzido
+        variable.set(translated_options.get(original_value, list(translated_options.values())[0]))
+
     def create_title(self):
         """
         Cria o título da aplicação.
 
         Adiciona um rótulo na parte superior da janela com o nome da aplicação e um subtítulo.
         """
-        title_label = tk.Label(
+        # Criar e adicionar o título
+        title_text = "TraduzAI"
+        self.title_label = tk.Label(
             self.root,
-            text="TraduzAI\n"
-                 "Uma Solução Personalizada para Tradução Eficaz e Fluente em Diferentes Contextos",
+            text=title_text,
             font=("Helvetica", 16, "bold")
         )
-        title_label.pack(pady=10)
+        self.title_label.pack(pady=(10, 0))  # Padding superior para espaçamento
+        self.label_texts[title_text] = self.title_label  # Armazenar para tradução
 
-    @staticmethod
-    def create_option_menu(parent, label_text, variable, options):
+        # Criar e adicionar o subtítulo abaixo do título
+        subtitle_text = "Uma Solução Personalizada para Tradução Eficaz e Fluente em Diferentes Contextos"
+        self.subtitle_label = tk.Label(
+            self.root,
+            text=subtitle_text,
+            font=("Helvetica", 13, "bold")
+        )
+        self.subtitle_label.pack(pady=(0, 10))  # Padding inferior para espaçamento
+        self.label_texts[subtitle_text] = self.subtitle_label  # Armazenar para tradução
+
+    def create_option_menu(self, parent, label_text, variable, options):
         """
         Função auxiliar para criar um menu de opções dentro do frame fornecido.
 
@@ -344,12 +488,19 @@ class TranslationApp:
             label_text (str): Texto do rótulo do menu.
             variable (tk.Variable): Variável associada ao menu de opções.
             options (list): Lista de opções disponíveis no menu.
+
+        Returns:
+            tk.OptionMenu: O OptionMenu criado.
         """
         label = tk.Label(parent, text=label_text, font=("Helvetica", 12))
         label.pack(pady=(10, 0))
+        self.label_texts[label_text] = label  # Armazenar para tradução
+
         menu = tk.OptionMenu(parent, variable, *options)
         menu.config(width=25)
         menu.pack(pady=(0, 10))
+
+        return menu
 
     def create_option_menus(self, parent):
         """
@@ -358,10 +509,33 @@ class TranslationApp:
         Args:
             parent (tk.Widget): Frame onde os menus serão adicionados.
         """
-        self.create_option_menu(parent, "Idioma de destino:", self.destino_var, LANGUAGES.keys())
-        self.create_option_menu(parent, "Área técnica:", self.area_var, SPECIALITIES)
-        self.create_option_menu(parent, "Estilo de escrita:", self.estilo_var, STYLES)
-        self.create_option_menu(parent, "Modelo OpenAI:", self.modelo_var, AVAILABLE_MODELS)
+        # Primeiro, criar o OptionMenu 'Idioma de destino'
+        self.create_option_menu(
+            parent,
+            "Idioma de destino:",
+            self.destino_var,
+            LANGUAGES.keys()
+        )
+
+        # Em seguida, criar os demais OptionMenus
+        self.area_option_menu = self.create_option_menu(
+            parent,
+            "Área técnica:",
+            self.area_var,
+            self.original_specialities.keys()
+        )
+        self.estilo_option_menu = self.create_option_menu(
+            parent,
+            "Estilo de escrita:",
+            self.estilo_var,
+            self.original_styles.keys()
+        )
+        self.modelo_option_menu = self.create_option_menu(
+            parent,
+            "Modelo OpenAI:",
+            self.modelo_var,
+            AVAILABLE_MODELS
+        )
 
     def create_complexity_option_menu(self, parent):
         """
@@ -370,7 +544,27 @@ class TranslationApp:
         Args:
             parent (tk.Widget): Frame onde o menu será adicionado.
         """
-        self.create_option_menu(parent, "Nível de Complexidade:", self.complexity_var, COMPLEXITY_LEVELS)
+        self.complexity_option_menu = self.create_option_menu(
+            parent,
+            "Nível de Complexidade:",
+            self.complexity_var,
+            self.original_complexity_levels.keys()
+        )
+
+    @staticmethod
+    def get_original_option(selected_value, translated_options):
+        """
+        Retorna a opção original a partir do valor selecionado traduzido.
+
+        Args:
+            selected_value (str): O valor selecionado (traduzido).
+            translated_options (dict): Dicionário com as opções originais e traduzidas.
+
+        Returns:
+            str: A opção original correspondente.
+        """
+        inverse_translations = {v: k for k, v in translated_options.items()}
+        return inverse_translations.get(selected_value, selected_value)
 
     def create_focus_aspects_checkboxes(self, parent):
         """
@@ -379,17 +573,25 @@ class TranslationApp:
         Args:
             parent (tk.Widget): Frame onde as caixas de seleção serão adicionadas.
         """
-        label = tk.Label(parent, text="Focar em:", font=("Helvetica", 12))
+        label_text = "Focar em:"
+        label = tk.Label(parent, text=label_text, font=("Helvetica", 12))
         label.pack(pady=(10, 0))
+        self.label_texts[label_text] = label  # Armazenar para tradução
+
         checkbox_clarity = tk.Checkbutton(parent, text="Clareza", variable=self.focus_clarity_var,
                                           font=("Helvetica", 12))
         checkbox_clarity.pack(pady=(0, 5))
+        self.label_texts["Clareza"] = checkbox_clarity  # Armazenar para tradução
+
         checkbox_conciseness = tk.Checkbutton(parent, text="Concisão", variable=self.focus_conciseness_var,
                                               font=("Helvetica", 12))
         checkbox_conciseness.pack(pady=(0, 5))
+        self.label_texts["Concisão"] = checkbox_conciseness  # Armazenar para tradução
+
         checkbox_formality = tk.Checkbutton(parent, text="Formalidade", variable=self.focus_formality_var,
                                             font=("Helvetica", 12))
         checkbox_formality.pack(pady=(0, 5))
+        self.label_texts["Formalidade"] = checkbox_formality  # Armazenar para tradução
 
     def create_api_parameter_entries(self, parent):
         """
@@ -398,22 +600,30 @@ class TranslationApp:
         Args:
             parent (tk.Widget): Frame onde os campos serão adicionados.
         """
-        label = tk.Label(parent, text="Parâmetros da API OpenAI:", font=("Helvetica", 12, "bold"))
+        label_text = "Parâmetros da API OpenAI:"
+        label = tk.Label(parent, text=label_text, font=("Helvetica", 12, "bold"))
         label.pack(pady=(10, 0))
+        self.label_texts[label_text] = label  # Armazenar para tradução
 
         # Frame principal para os parâmetros
         params_frame = tk.Frame(parent)
         params_frame.pack(pady=(5, 5))
 
         # Temperature
-        temperature_label = tk.Label(params_frame, text="Temperature:", font=("Helvetica", 12))
+        temp_label_text = "Temperature:"
+        temperature_label = tk.Label(params_frame, text=temp_label_text, font=("Helvetica", 12))
         temperature_label.grid(row=0, column=0, sticky='e', padx=5, pady=5)
+        self.label_texts[temp_label_text] = temperature_label  # Armazenar para tradução
+
         temperature_entry = tk.Entry(params_frame, textvariable=self.temperature_var, width=5)
         temperature_entry.grid(row=0, column=1, padx=5, pady=5)
 
         # Max Tokens
-        max_tokens_label = tk.Label(params_frame, text="Max Tokens:", font=("Helvetica", 12))
+        max_tokens_label_text = "Max Tokens:"
+        max_tokens_label = tk.Label(params_frame, text=max_tokens_label_text, font=("Helvetica", 12))
         max_tokens_label.grid(row=1, column=0, sticky='e', padx=5, pady=5)
+        self.label_texts[max_tokens_label_text] = max_tokens_label  # Armazenar para tradução
+
         max_tokens_entry = tk.Entry(params_frame, textvariable=self.max_tokens_var, width=5)
         max_tokens_entry.grid(row=1, column=1, padx=5, pady=5)
 
@@ -427,13 +637,15 @@ class TranslationApp:
         Args:
             parent (tk.Widget): Frame onde a caixa de seleção será adicionada.
         """
+        text = "Resumir"
         checkbox_summarize = tk.Checkbutton(
             parent,
-            text="Resumir",
+            text=text,
             variable=self.summarize_var,
             font=("Helvetica", 12)
         )
         checkbox_summarize.pack(pady=(10, 10))
+        self.label_texts[text] = checkbox_summarize  # Armazenar para tradução
 
     def create_translate_button(self, parent):
         """
@@ -442,14 +654,42 @@ class TranslationApp:
         Args:
             parent (tk.Widget): Frame onde o botão será adicionado.
         """
-        self.create_button(
+        text = "Simplificar Linguagem e Traduzir"
+        button = self.create_button(
             parent=parent,
-            text="Simplificar Linguagem e Traduzir",
+            text=text,
             command=self.translate_text,
             bg_color="#4CAF50",
             padx=20,
             pady=10
         )
+        self.label_texts[text] = button  # Armazenar para tradução
+
+    @staticmethod
+    def create_button(parent, text, command, bg_color, **pack_options):
+        """
+        Função auxiliar para criar botões.
+
+        Args:
+            parent (tk.Widget): Widget pai onde o botão será adicionado.
+            text (str): Texto exibido no botão.
+            command (callable): Função chamada quando o botão é clicado.
+            bg_color (str): Cor de fundo do botão.
+            **pack_options: opções adicionais para o método pack().
+
+        Returns:
+            tk.Button: O botão criado.
+        """
+        button = tk.Button(
+            parent,
+            text=text,
+            command=command,
+            bg=bg_color,
+            fg="white",
+            font=("Helvetica", 12, "bold")
+        )
+        button.pack(**pack_options)
+        return button
 
     def create_text_input(self, parent):
         """
@@ -458,12 +698,15 @@ class TranslationApp:
         Args:
             parent (tk.Widget): Frame onde a área de entrada será adicionada.
         """
+        label_text = "Texto para Simplificar e Traduzir:"
         label_entrada = tk.Label(
             parent,
-            text="Texto para Simplificar e Traduzir:",
+            text=label_text,
             font=("Helvetica", 12, "bold")
         )
         label_entrada.pack(pady=(10, 0))
+        self.label_texts[label_text] = label_entrada  # Armazenar para tradução
+
         self.texto_entrada = tk.Text(parent, height=25, width=70, wrap='word')
         self.texto_entrada.pack(pady=(5, 10))
 
@@ -476,8 +719,16 @@ class TranslationApp:
         """
         button_frame = tk.Frame(parent)
         button_frame.pack(pady=(5, 10))
-        self.create_button(button_frame, "Importar Documento", self.import_document, "#2196F3", side=tk.LEFT, padx=5)
-        self.create_button(button_frame, "Exportar Documento", self.export_document, "#FF9800", side=tk.LEFT, padx=5)
+
+        # Criar e armazenar o botão "Importar Documento"
+        button_import = self.create_button(button_frame, "Importar Documento", self.import_document, "#2196F3",
+                                           side=tk.LEFT, padx=5)
+        self.label_texts["Importar Documento"] = button_import  # Armazenar para tradução
+
+        # Criar e armazenar o botão "Exportar Documento"
+        button_export = self.create_button(button_frame, "Exportar Documento", self.export_document, "#FF9800",
+                                           side=tk.LEFT, padx=5)
+        self.label_texts["Exportar Documento"] = button_export  # Armazenar para tradução
 
     def create_text_output(self, parent):
         """
@@ -486,12 +737,15 @@ class TranslationApp:
         Args:
             parent (tk.Widget): Frame onde a área de saída será adicionada.
         """
+        label_text = "Texto Simplificado e Traduzido:"
         label_saida = tk.Label(
             parent,
-            text="Texto Simplificado e Traduzido:",
+            text=label_text,
             font=("Helvetica", 12, "bold")
         )
         label_saida.pack(pady=(10, 0))
+        self.label_texts[label_text] = label_saida  # Armazenar para tradução
+
         self.texto_saida = tk.Text(parent, height=25, width=70, wrap='word', state='disabled')
         self.texto_saida.pack(pady=(5, 10))
 
@@ -505,6 +759,7 @@ class TranslationApp:
         # Frame para as métricas do texto original
         original_frame = tk.LabelFrame(parent, text="Métricas do Texto Original", font=("Helvetica", 12, "bold"))
         original_frame.pack(fill='both', expand=True, padx=10, pady=10)
+        self.label_texts["Métricas do Texto Original"] = original_frame  # Armazenar para tradução
 
         # Frame interno para organizar as métricas em tabela
         original_metrics_frame = tk.Frame(original_frame)
@@ -524,11 +779,12 @@ class TranslationApp:
         for i, name in enumerate(metric_names):
             label_name = tk.Label(original_metrics_frame, text=name + ":", anchor='w', font=("Helvetica", 11, "bold"))
             label_name.grid(row=i, column=0, sticky='w', padx=(0, 5), pady=2)
+            self.label_texts[name + ":"] = label_name  # Armazenar para tradução
             label_value = tk.Label(original_metrics_frame, text="", anchor='e', font=("Helvetica", 11))
             label_value.grid(row=i, column=1, sticky='e', pady=2)
             self.original_metric_labels[name] = label_value
 
-        # Adicionar descrições abaixo das métricas do texto original
+            # Adicionar descrições abaixo das métricas do texto original
         original_description = (
             "1 - Índice de Flesch Reading Ease:\n\tMede a facilidade de leitura;\n\tValores mais altos indicam texto mais fácil.\n"
             "2 - Grau de Flesch-Kincaid:\n\tIndica o nível escolar necessário;\n\tValores mais baixos indicam texto mais acessível.\n"
@@ -537,13 +793,20 @@ class TranslationApp:
             "5 - Índice ARI:\n\tUsa caracteres por palavra e palavras por frase;\n\tValores mais baixos indicam texto mais simples.\n"
             "6 - Pontuação de Dale-Chall:\n\tCompara com uma lista de palavras familiares;\n\tValores mais baixos indicam texto mais fácil."
         )
-        original_desc_label = tk.Label(original_frame, text=original_description, justify='left', wraplength=400,
-                                       font=("Courier", 10))
+        original_desc_label = tk.Label(
+            original_frame,
+            text=original_description,
+            justify='left',
+            wraplength=400,
+            font=("Courier", 10)
+        )
         original_desc_label.pack(padx=10, pady=(10, 0))
+        self.label_texts[original_description] = original_desc_label  # Armazenar para tradução
 
         # Frame para as métricas do texto simplificado
         simplified_frame = tk.LabelFrame(parent, text="Métricas do Texto Simplificado", font=("Helvetica", 12, "bold"))
         simplified_frame.pack(fill='both', expand=True, padx=10, pady=10)
+        self.label_texts["Métricas do Texto Simplificado"] = simplified_frame  # Armazenar para tradução
 
         # Frame interno para organizar as métricas em tabela
         simplified_metrics_frame = tk.Frame(simplified_frame)
@@ -555,6 +818,7 @@ class TranslationApp:
         for i, name in enumerate(metric_names):
             label_name = tk.Label(simplified_metrics_frame, text=name + ":", anchor='w', font=("Helvetica", 11, "bold"))
             label_name.grid(row=i, column=0, sticky='w', padx=(0, 5), pady=2)
+            self.label_texts[name + ":"] = label_name  # Armazenar para tradução
             label_value = tk.Label(simplified_metrics_frame, text="", anchor='e', font=("Helvetica", 11))
             label_value.grid(row=i, column=1, sticky='e', pady=2)
             self.simplified_metric_labels[name] = label_value
@@ -564,36 +828,15 @@ class TranslationApp:
         bleu_label_name = tk.Label(simplified_metrics_frame, text='BLEU Score:', anchor='w',
                                    font=("Helvetica", 11, "bold"))
         bleu_label_name.grid(row=row_index, column=0, sticky='w', padx=(0, 5), pady=2)
+        self.label_texts['BLEU Score:'] = bleu_label_name  # Armazenar para tradução
         self.bleu_score_label = tk.Label(simplified_metrics_frame, text="", anchor='e', font=("Helvetica", 11))
         self.bleu_score_label.grid(row=row_index, column=1, sticky='e', pady=2)
-
-    @staticmethod
-    def create_button(parent, text, command, bg_color, **pack_options):
-        """
-        Função auxiliar para criar botões.
-
-        Args:
-            parent (tk.Widget): Widget pai onde o botão será adicionado.
-            text (str): Texto exibido no botão.
-            command (callable): Função chamada quando o botão é clicado.
-            bg_color (str): Cor de fundo do botão.
-            **pack_options: opções adicionais para o metodo pack() ou grid().
-        """
-        button = tk.Button(
-            parent,
-            text=text,
-            command=command,
-            bg=bg_color,
-            fg="white",
-            font=("Helvetica", 12, "bold")
-        )
-        button.pack(**pack_options)
 
     def translate_text(self) -> None:
         """
         Realiza a simplificação e tradução do texto inserido.
 
-        Este metodo executa os seguintes passos:
+        Este método executa os seguintes passos:
             1. Obtém o texto de entrada da interface.
             2. Coleta os parâmetros selecionados pelo usuário.
             3. Utiliza o serviço OpenAI para simplificar o texto.
@@ -611,11 +854,11 @@ class TranslationApp:
             return
 
         codigo_idioma_destino = LANGUAGES.get(self.destino_var.get(), 'pt')
-        area_tecnica = self.area_var.get()
-        estilo = self.estilo_var.get()
+        area_tecnica = self.get_original_option(self.area_var.get(), self.translated_specialities)
+        estilo = self.get_original_option(self.estilo_var.get(), self.translated_styles)
         summarize = self.summarize_var.get()
         modelo_selecionado = self.modelo_var.get()
-        complexity_level = self.complexity_var.get()
+        complexity_level = self.get_original_option(self.complexity_var.get(), self.translated_complexity_levels)
 
         focus_aspects = []
         if self.focus_clarity_var.get():
@@ -649,8 +892,8 @@ class TranslationApp:
             metrics_simplified = self.readability_service.calculate_readability(texto_simplificado)
 
             # Armazena as métricas para exportação
-            self.metrics_original = metrics_original  # Adicionado
-            self.metrics_simplified = metrics_simplified  # Adicionado
+            self.metrics_original = metrics_original
+            self.metrics_simplified = metrics_simplified
 
             # Traduz o texto simplificado
             texto_traduzido, source_language_code = self.aws_translate_service.translate_text(
