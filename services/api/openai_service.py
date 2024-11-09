@@ -163,7 +163,6 @@ class OpenAIService:
             - A simplificação de texto envolve reescrever o conteúdo de maneira mais acessível, mantendo a essência das informações.
             - A funcionalidade de sumarização reduz o texto mantendo os pontos-chave, facilitando a compreensão rápida do conteúdo.
         """
-        # Construir a descrição do nível de complexidade
         complexity_description = ''
         if complexity_level == 'Básico':
             complexity_description = 'usando linguagem simples, adequada para iniciantes'
@@ -178,19 +177,22 @@ class OpenAIService:
             focus_description = 'focando em ' + ', '.join(focus_aspects)
 
         # Construir o conteúdo do usuário
-        user_content = f"Por favor, reescreva o seguinte texto {complexity_description}"
+        user_content = f"Reescreva o seguinte texto {complexity_description}"
         if focus_description:
             user_content += f", {focus_description}"
         user_content += f", utilizando um estilo {estilo}."
         if summarize:
-            user_content += " Por favor, também resuma o texto, mantendo as informações essenciais."
+            user_content += " Resuma o texto, mantendo as informações essenciais."
+        else:
+            user_content += " Mantenha todas as ideias originais, evitando omitir ou resumir informações relevantes para o pleno entendimento do texto."
         user_content += f"\n\nTexto:\n\"\"\"\n{text}\n\"\"\""
 
         messages = [
             {
                 "role": "system",
                 "content": (
-                    f"Você é um(a) especialista em {area_tecnica}. Seu objetivo é tornar conceitos dessa área mais acessíveis a pessoas leigas."
+                    f"Você é um(a) especialista em {area_tecnica}. Seu objetivo é tornar conceitos dessa área mais acessíveis a pessoas leigas. "
+                    f"Produza apenas o texto reescrito solicitado, sem mencionar que você é uma IA ou oferecer interações adicionais."
                 )
             },
             {
