@@ -815,6 +815,7 @@ class TranslationApp:
         self.label_texts["Métricas do Texto Simplificado"] = simplified_frame  # Armazenar para tradução
 
         # Frame interno para organizar as métricas em tabela
+
         simplified_metrics_frame = tk.Frame(simplified_frame)
         simplified_metrics_frame.pack(padx=10, pady=10)
 
@@ -1011,7 +1012,7 @@ class TranslationApp:
         Exporta o texto de saída para um documento escolhido pelo usuário.
 
         Permite ao usuário salvar o texto traduzido e simplificado em formatos
-        como TXT, PDF ou DOCX, incluindo as métricas de legibilidade.
+        como TXT, PDF ou DOCX, incluindo as métricas de legibilidade e o BLEU Score.
 
         Exceções:
             - Exibe uma mensagem de erro se não houver texto para exportar ou
@@ -1044,12 +1045,19 @@ class TranslationApp:
                     messagebox.showerror("Formato não suportado", f"Formato de arquivo não suportado: {ext}")
                     return
                 text = self.texto_saida.get("1.0", END)
+
+                # Obter o BLEU Score a partir do label
+                bleu_score_text = self.bleu_score_label.cget("text")
+                bleu_score = float(bleu_score_text) if bleu_score_text else None
+
+                # Passar o BLEU Score para o método de exportação
                 self.document_service.export_document(
                     text,
                     file_path,
                     format,
                     self.metrics_original,
-                    self.metrics_simplified
+                    self.metrics_simplified,
+                    bleu_score  # Passando o BLEU Score
                 )
                 messagebox.showinfo("Exportação bem-sucedida", f"Documento exportado com sucesso: {file_path}")
             except Exception as e:

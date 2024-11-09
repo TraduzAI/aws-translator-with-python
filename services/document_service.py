@@ -61,8 +61,9 @@ class DocumentService:
         import_document(file_path: str) ⇾ Optional[str]:
             Importa texto de um arquivo de documento.
 
-        export_document(text: str, file_path: str, format: str) ⇾ None:
-            Exporta texto para um arquivo de documento.
+        export_document(text: str, file_path: str, format: str, metrics_original: dict = None,
+                        metrics_simplified: dict = None, bleu_score: float = None) ⇾ None:
+            Exporta texto para um arquivo de documento, incluindo o BLEU Score.
     """
 
     def import_document(self, file_path: str) -> Optional[str]:
@@ -102,12 +103,12 @@ class DocumentService:
             raise ValueError(f"Formato de arquivo não suportado: {ext}")
 
     def export_document(self, text: str, file_path: str, format: str, metrics_original: dict = None,
-                        metrics_simplified: dict = None) -> None:
+                        metrics_simplified: dict = None, bleu_score: float = None) -> None:
         """
-        Exporta texto e métricas para um arquivo de documento.
+        Exporta texto e métricas para um arquivo de documento, incluindo o BLEU Score.
 
         Este metodo determina o formato de exportação com base no parâmetro `format`
-        e utiliza o metodo apropriado para salvar o texto e métricas no formato desejado.
+        e utiliza o metodo apropriado para salvar o texto, métricas e BLEU Score no formato desejado.
 
         Parâmetros:
             text (str): O texto a ser exportado.
@@ -115,6 +116,7 @@ class DocumentService:
             format (str): Formato de exportação desejado (`'pdf'`, `'docx'`, `'txt'`).
             metrics_original (dict): Métricas do texto original.
             metrics_simplified (dict): Métricas do texto simplificado.
+            bleu_score (float): O BLEU Score do texto simplificado e traduzido.
 
         Retorna:
             None
@@ -125,11 +127,11 @@ class DocumentService:
         """
         format = format.lower()
         if format == 'pdf':
-            self._export_pdf(text, file_path, metrics_original, metrics_simplified)
+            self._export_pdf(text, file_path, metrics_original, metrics_simplified, bleu_score)
         elif format == 'docx':
-            self._export_docx(text, file_path, metrics_original, metrics_simplified)
+            self._export_docx(text, file_path, metrics_original, metrics_simplified, bleu_score)
         elif format == 'txt':
-            self._export_txt(text, file_path, metrics_original, metrics_simplified)
+            self._export_txt(text, file_path, metrics_original, metrics_simplified, bleu_score)
         else:
             raise ValueError(f"Formato de exportação não suportado: {format}")
 
@@ -246,18 +248,20 @@ class DocumentService:
             raise Exception(f"Erro ao importar TXT: {str(e)}")
 
     @staticmethod
-    def _export_pdf(text: str, file_path: str, metrics_original: dict = None, metrics_simplified: dict = None) -> None:
+    def _export_pdf(text: str, file_path: str, metrics_original: dict = None, metrics_simplified: dict = None,
+                    bleu_score: float = None) -> None:
         """
-        Exporta texto e métricas para um arquivo PDF.
+        Exporta texto e métricas para um arquivo PDF, incluindo o BLEU Score.
 
         Utiliza a biblioteca ReportLab para gerar um PDF a partir do texto fornecido,
-        cuidando da formatação e quebra de linhas conforme necessário, e inclui as métricas.
+        cuidando da formatação e quebra de linhas conforme necessário, e inclui as métricas e o BLEU Score.
 
         Parâmetros:
             text (str): O texto a ser exportado para o PDF.
             file_path (str): Caminho onde o arquivo PDF será salvo.
             metrics_original (dict): Métricas do texto original.
             metrics_simplified (dict): Métricas do texto simplificado.
+            bleu_score (float): O BLEU Score do texto simplificado e traduzido.
 
         Retorna:
             None
@@ -349,15 +353,30 @@ class DocumentService:
                         text_object = c.beginText(50, height - 50)
                         text_object.setFont("Helvetica", 12)
 
+            # Adicionar o BLEU Score
+            if bleu_score is not None:
+                text_object.textLine("")
+                text_object.setFont("Helvetica-Bold", 14)
+                text_object.textLine("BLEU Score:")
+                text_object.setFont("Helvetica", 12)
+                text_object.textLine(f"{bleu_score:.2f}")
+
+                if text_object.getY() <= 50:
+                    c.drawText(text_object)
+                    c.showPage()
+                    text_object = c.beginText(50, height - 50)
+                    text_object.setFont("Helvetica", 12)
+
             c.drawText(text_object)
             c.save()
         except Exception as e:
             raise Exception(f"Erro ao exportar PDF: {str(e)}")
 
     @staticmethod
-    def _export_docx(text: str, file_path: str, metrics_original: dict = None, metrics_simplified: dict = None) -> None:
+    def _export_docx(text: str, file_path: str, metrics_original: dict = None, metrics_simplified: dict = None,
+                     bleu_score: float = None) -> None:
         """
-        Exporta texto e métricas para um arquivo DOCX.
+        Exporta texto e métricas para um arquivo DOCX, incluindo o BLEU Score.
 
         Utiliza a biblioteca python-docx para criar um documento DOCX com o texto e as métricas fornecidos.
 
@@ -366,6 +385,7 @@ class DocumentService:
             file_path (str): Caminho onde o arquivo DOCX será salvo.
             metrics_original (dict): Métricas do texto original.
             metrics_simplified (dict): Métricas do texto simplificado.
+            bleu_score (float): O BLEU Score do texto simplificado e traduzido.
 
         Retorna:
             None
@@ -402,22 +422,29 @@ class DocumentService:
                     metric_name = metric_names.get(key, key)
                     doc.add_paragraph(f"{metric_name}: {value:.2f}")
 
+            # Adicionar o BLEU Score
+            if bleu_score is not None:
+                doc.add_heading('BLEU Score:', level=2)
+                doc.add_paragraph(f"{bleu_score:.2f}")
+
             doc.save(file_path)
         except Exception as e:
             raise Exception(f"Erro ao exportar DOCX: {str(e)}")
 
     @staticmethod
-    def _export_txt(text: str, file_path: str, metrics_original: dict = None, metrics_simplified: dict = None) -> None:
+    def _export_txt(text: str, file_path: str, metrics_original: dict = None, metrics_simplified: dict = None,
+                    bleu_score: float = None) -> None:
         """
-        Exporta texto e métricas para um arquivo TXT.
+        Exporta texto e métricas para um arquivo TXT, incluindo o BLEU Score.
 
-        Abre (ou cria) o arquivo de texto e escreve todos os conteúdos fornecidos, incluindo as métricas.
+        Abre (ou cria) o arquivo de texto e escreve todos os conteúdos fornecidos, incluindo as métricas e o BLEU Score.
 
         Parâmetros:
             text (str): O texto a ser exportado para o TXT.
             file_path (str): Caminho onde o arquivo TXT será salvo.
             metrics_original (dict): Métricas do texto original.
             metrics_simplified (dict): Métricas do texto simplificado.
+            bleu_score (float): O BLEU Score do texto simplificado e traduzido.
 
         Retorna:
             None
@@ -450,5 +477,10 @@ class DocumentService:
                     for key, value in metrics_simplified.items():
                         metric_name = metric_names.get(key, key)
                         f.write(f"{metric_name}: {value:.2f}\n")
+
+                # Adicionar o BLEU Score
+                if bleu_score is not None:
+                    f.write("\nBLEU Score:\n")
+                    f.write(f"{bleu_score:.2f}\n")
         except Exception as e:
             raise Exception(f"Erro ao exportar TXT: {str(e)}")
